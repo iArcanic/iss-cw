@@ -1,39 +1,24 @@
 # main.py
 
+from src.key_gen import *
+from src.encryption import *
+from src.decryption import *
+from src.key_management import *
+
 if __name__ == '__main__':
-    while True:
-        print("\nWelcome to St John's Clinic")
-        print("1. User Login")
-        print("2. Admin Login")
-        print("3. Exit")
+    aes_key = generate_aes_key()
 
-        menu_choice = int(input("Enter your choice: "))
+    keys = {
+        "aes_key": aes_key
+    }
 
-        if menu_choice == 1:
-            while True:
-                print("\nUser Login")
-                print("1. Normal Login")
-                print("2. SSO (Single-Sign-On) Login")
-                print("3. Exit")
+    print(store_keys_in_hsm(keys))
+    aes_retrieved_key = retrieve_key("aes_key")
 
-                user_login_choice = int(input("Enter your choice: "))
+    plaintext_data = "Hello World!"
 
-                if user_login_choice == 1:
-                    print("Normal Login")
-                    break
-                elif user_login_choice == 2:
-                    print("SSO Login")
-                    break
-                elif user_login_choice == 3:
-                    break
-                else:
-                    print("\nInvalid choice. Please try again.")
+    ciphertext = aes_encrypt(aes_retrieved_key, plaintext_data.encode())
+    print("Encrypted Data:", ciphertext.hex())
 
-        elif menu_choice == 2:
-            print("\nAdmin Login")
-            admin_login_choice = int(input("Enter your choice: "))
-            break
-        elif menu_choice == 3:
-            break
-        else:
-            print("\nInvalid choice. Please try again.\n")
+    decrypted_data = aes_decrypt(aes_retrieved_key, ciphertext[:16], ciphertext[16:])
+    print("Decrypted Data:", decrypted_data.decode())
