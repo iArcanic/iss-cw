@@ -164,3 +164,6 @@ Thumbs.db
 
 # Ignore any vscode files and directories
 .vscode/
+
+# Ignore JSON files
+.json
