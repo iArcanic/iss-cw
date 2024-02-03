@@ -6,11 +6,13 @@ from src.decryption import *
 from src.key_management import *
 from src.authentication.login import *
 from src.authentication.register import *
+from src.authentication.sso import *
 
 if __name__ == '__main__':
 
-    register_user("john_doe", "mySecurePassword", "07123456789")
-    login_user("john_doe", "mySecurePassword")
+    # register_user("john_doe", "mySecurePassword", "07123456789")
+    # login_user("john_doe", "mySecurePassword")
+    single_sign_on("john_doe")
 
     # aes_key = generate_aes_key()
 

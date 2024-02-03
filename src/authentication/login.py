@@ -12,6 +12,7 @@ def login_user(username, password):
     try:
         with open(USER_DB, 'r') as db_file:
             users_data = json.load(db_file)
+
     except FileNotFoundError:
         print("User database not found. Please register first.")
         return
