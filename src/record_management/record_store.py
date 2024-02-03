@@ -10,8 +10,8 @@ from src.role_check import *
 RECORDS_DB = "data/records_db.json"
 
 @role_check_decorator
-def record_store(user_id, data, record_type, meta_data, action="store"):
-    key = retrieve_key(user_id)
+def record_store(owner_id, data, meta_data, permission):
+    key = retrieve_key(owner_id)
 
     # Ensure 'data' is a dictionary representing JSON data
     if not isinstance(data, dict):
@@ -29,7 +29,7 @@ def record_store(user_id, data, record_type, meta_data, action="store"):
 
     try:
         with open(RECORDS_DB, "w") as db_file:
-            json.dump({"user_id": user_id, "data": serialized_ciphertext, "record_type": record_type, "meta_data": meta_data}, db_file, indent=2)
+            json.dump({"owner_id": owner_id, "data": serialized_ciphertext, "meta_data": meta_data}, db_file, indent=2)
 
     except FileNotFoundError:
         print(f"MedRecords database {RECORDS_DB} not found!")

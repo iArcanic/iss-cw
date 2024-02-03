@@ -1,0 +1,32 @@
+{
+    "doctor": {
+        "permissions": [
+            "MEDICAL_RECORD_EDIT",
+            "MEDICAL_RECORD_VIEW"
+        ]
+    },
+    "nurse": {
+        "permissions": [
+            "MEDICAL_RECORD_EDIT",
+            "MEDICAL_RECORD_VIEW"
+        ]
+    },
+    "lab_technician": {
+        "permissions": [
+            "ORDER_LAB_TESTS",
+            "VIEW_LAB_RESULTS"
+        ]
+    },
+    "receptionist": {
+        "permissions": [
+            "SEND_PATIENT_INVOICE",
+            "VIEW_USER_RECORDS"
+        ]
+    },
+    "patient": {
+        "permissions": [
+            "VIEW_OWN_RECORDS",
+            "VIEW_BILLING_INFO"
+        ]
+    }
+}

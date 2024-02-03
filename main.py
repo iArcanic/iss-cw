@@ -32,14 +32,14 @@ if __name__ == '__main__':
     }
 
     record_store(
-        user_id=user_id,
+        owner_id=user_id,
         data=med_records_data,
-        record_type="med_record",
         meta_data={
             "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
-            "record_owner_id": user_id,
+            "data_type": "MEDICAL_RECORD",
             "timestamp": datetime.utcnow().isoformat()
-        }
+        },
+        permission="MEDICAL_RECORD_EDIT"
     )
 
     # ciphertext = aes_encrypt(aes_retrieved_key, plaintext_data.encode())

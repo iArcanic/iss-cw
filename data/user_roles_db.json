@@ -1,19 +1,17 @@
 {
-    "user_roles": {
-      "6967dcf0-fd7e-47ea-90a5-c10265650173": {
-        "roles": ["doctors"]
-      },
-      "6967dcf0-fd7e-47ea-90a5-c10265650174": {
-        "roles": ["nurses"]
-      },
-      "6967dcf0-fd7e-47ea-90a5-c10265650175": {
-        "roles": ["lab_technicians"]
-      },
-      "6967dcf0-fd7e-47ea-90a5-c10265650176": {
-        "roles": ["other_medical_professionals"]
-      },
-      "6967dcf0-fd7e-47ea-90a5-c10265650177": {
-        "roles": ["administrators"]
-      }
-    }
+  "6967dcf0-fd7e-47ea-90a5-c10265650173": {
+    "roles": ["doctor"]
+  },
+  "6967dcf0-fd7e-47ea-90a5-c10265650174": {
+    "roles": ["nurse"]
+  },
+  "6967dcf0-fd7e-47ea-90a5-c10265650175": {
+    "roles": ["lab_technician"]
+  },
+  "6967dcf0-fd7e-47ea-90a5-c10265650176": {
+    "roles": ["patient"]
+  },
+  "6967dcf0-fd7e-47ea-90a5-c10265650177": {
+    "roles": ["receptionist"]
   }
+}
