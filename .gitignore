@@ -166,4 +166,4 @@ Thumbs.db
 .vscode/
 
 # Ignore JSON files
-.json
+*.json
