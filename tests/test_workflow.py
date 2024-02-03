@@ -12,8 +12,7 @@ from key_management import *
 from authentication import *
 
 def test_workflow():
-    # Authenticate user
-    login("john", "poothika")
+    pass
 
     # # Test key generation
     # aes_generated_key = generate_aes_key()

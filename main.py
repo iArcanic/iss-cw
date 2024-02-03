@@ -4,15 +4,13 @@ from src.key_gen import *
 from src.encryption import *
 from src.decryption import *
 from src.key_management import *
-from src.authentication import *
+from src.authentication.login import *
+from src.authentication.register import *
 
 if __name__ == '__main__':
 
     register_user("john_doe", "mySecurePassword", "07123456789")
-
     login_user("john_doe", "mySecurePassword")
-
-    # login("john", "poothika")
 
     # aes_key = generate_aes_key()
 
