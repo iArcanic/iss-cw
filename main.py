@@ -8,21 +8,39 @@ from src.authentication.sso import *
 from src.key_management.key_gen import *
 from src.key_management.key_store import *
 from src.key_management.key_retrieve import *
+from src.record_management.record_store import *
+from datetime import datetime
 
 if __name__ == '__main__':
 
     # register_user("john_doe", "mySecurePassword", "07123456789")
-    # login_user("john_doe", "mySecurePassword")
-    single_sign_on("john_doe")
+    user_id = "6967dcf0-fd7e-47ea-90a5-c10265650173"
 
-    aes_key = generate_aes_key()
+    # single_sign_on("john_doe")
 
-    store_key_in_hsm("6967dcf0-fd7e-47ea-90a5-c10265650173", aes_key)
+    # aes_key = generate_aes_key()
 
-    user_retrieved_key = retrieve_key("6967dcf0-fd7e-47ea-90a5-c10265650173")
-    print(user_retrieved_key.hex())
+    # store_key_in_hsm("6967dcf0-fd7e-47ea-90a5-c10265650173", aes_key)
 
-    # plaintext_data = "Hello World!"
+    # user_retrieved_key = retrieve_key("6967dcf0-fd7e-47ea-90a5-c10265650173")
+    # print(user_retrieved_key.hex())
+
+    med_records_data = {
+        "blood_pressure": 120,
+        "blood_glucose": 120,
+        "blood_sugar": 120
+    }
+
+    record_store(
+        user_id=user_id,
+        data=med_records_data,
+        record_type="med_record",
+        meta_data={
+            "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+            "record_owner_id": user_id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    )
 
     # ciphertext = aes_encrypt(aes_retrieved_key, plaintext_data.encode())
     # print("Encrypted Data:", ciphertext.hex())

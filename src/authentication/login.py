@@ -40,6 +40,7 @@ def login_user(username, password):
 
         if entered_code == two_factor_code:
             print("Login successful.")
+            return user_data['user_id']
         else:
             print("2FA verification failed. Login aborted.")
     else:

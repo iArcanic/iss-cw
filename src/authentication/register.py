@@ -65,3 +65,4 @@ def register_user(username, password, phone_number):
         json.dump(users_data, db_file, indent=2)
 
     print(f"User '{username}' registered successfully.")
+    return user_id
