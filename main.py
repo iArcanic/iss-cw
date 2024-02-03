@@ -1,12 +1,13 @@
 # main.py
 
-from src.key_gen import *
 from src.encryption import *
 from src.decryption import *
-from src.key_management import *
 from src.authentication.login import *
 from src.authentication.register import *
 from src.authentication.sso import *
+from src.key_management.key_gen import *
+from src.key_management.key_store import *
+from src.key_management.key_retrieve import *
 
 if __name__ == '__main__':
 
@@ -14,14 +15,12 @@ if __name__ == '__main__':
     # login_user("john_doe", "mySecurePassword")
     single_sign_on("john_doe")
 
-    # aes_key = generate_aes_key()
+    aes_key = generate_aes_key()
 
-    # keys = {
-    #     "aes_key": aes_key
-    # }
+    store_key_in_hsm("6967dcf0-fd7e-47ea-90a5-c10265650173", aes_key)
 
-    # print(store_keys_in_hsm(keys))
-    # aes_retrieved_key = retrieve_key("aes_key")
+    user_retrieved_key = retrieve_key("6967dcf0-fd7e-47ea-90a5-c10265650173")
+    print(user_retrieved_key.hex())
 
     # plaintext_data = "Hello World!"
 

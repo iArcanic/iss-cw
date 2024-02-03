@@ -1,0 +1,43 @@
+{
+    "roles": {
+      "doctors": {
+        "permissions": ["view_patient_records", "schedule_appointments", "prescribe_medication"]
+      },
+      "nurses": {
+        "permissions": ["view_patient_records", "record_vital_signs", "administer_medications"]
+      },
+      "lab_technicians": {
+        "permissions": ["view_lab_results", "record_lab_tests", "analyze_samples"]
+      },
+      "administrators": {
+        "permissions": ["manage_users", "configure_system", "generate_reports"]
+      },
+      "front_office_staff": {
+        "permissions": ["schedule_appointments", "check_in_patients", "handle_phone_inquiries"]
+      },
+      "accountants": {
+        "permissions": ["manage_financial_records", "generate_invoices", "process_payments"]
+      },
+      "patients": {
+        "permissions": ["view_own_medical_records", "schedule_appointments", "communicate_with_provider"]
+      },
+      "system_administrators": {
+        "permissions": ["configure_network", "manage_servers", "audit_system_logs"]
+      },
+      "security_analysts": {
+        "permissions": ["monitor_system_security", "investigate_security_incidents", "conduct_security_audits"]
+      },
+      "database_administrators": {
+        "permissions": ["manage_database_access", "optimize_database_performance", "backup_and_restore_data"]
+      },
+      "researchers": {
+        "permissions": ["access_research_data", "submit_research_findings", "collaborate_with_peers"]
+      },
+      "clinicians_collaborators": {
+        "permissions": ["view_shared_patient_data", "participate_in_collaborative_research"]
+      },
+      "industry_partners": {
+        "permissions": ["access_partner_data", "collaborate_on_projects"]
+      }
+    }
+  }

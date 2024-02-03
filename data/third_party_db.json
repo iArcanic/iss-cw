@@ -1,0 +1,9 @@
+{
+  "john_doe": {
+    "user_id": "6967dcf0-fd7e-47ea-90a5-c10265650173",
+    "username": "john_doe",
+    "hashed_password": "$2b$12$I5aRaZRf8bqPIoC8Jv3qU.24/UzzvXheC/uYqLYdF8bhmeiHRvTSK",
+    "salt": "$2b$12$I5aRaZRf8bqPIoC8Jv3qU.",
+    "phone_number": "07123456789"
+  }
+}
