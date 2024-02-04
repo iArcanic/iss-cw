@@ -1,6 +1,7 @@
 # key_store.py
 
 import json
+from src.data_manager import *
 
 HSM_DB = "data/hsm.json"
 
@@ -23,10 +24,7 @@ def store_key_in_hsm(user_id, key):
                 return False
 
         # If user_id doesn't exist, add the new entry
-        with open(HSM_DB, "a") as f:
-            json.dump(key_entry, f)
-            f.write('\n')  # Add a newline to separate entries
-        return True
+        data_store(HSM_DB, key_entry)
 
     except FileNotFoundError:
         print("HSM database not found.")

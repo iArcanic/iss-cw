@@ -5,17 +5,12 @@ import json
 import bcrypt
 import uuid
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
+from src.data_manager import *
 
 USER_DB = "data/user_db.json"
 
 def login_user(username, password):
-    try:
-        with open(USER_DB, 'r') as db_file:
-            users_data = json.load(db_file)
-
-    except FileNotFoundError:
-        print("User database not found. Please register first.")
-        return
+    users_data = data_read(USER_DB)
 
     # Check if the username exists in the database
     if username not in users_data:

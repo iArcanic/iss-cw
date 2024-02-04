@@ -5,18 +5,12 @@ import json
 import bcrypt
 import uuid
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
+from src.data_manager import *
 
 USER_DB = "data/user_db.json"
 
 def register_user(username, password, phone_number):
-    try:
-        # Try to open the existing database file
-        with open(USER_DB, 'r') as db_file:
-            users_data = json.load(db_file)
-
-    except FileNotFoundError:
-        # If the file is not found, create an empty database
-        users_data = {}
+    users_data = data_read_return_empty_if_not_found(USER_DB)
 
     # Check if the username already exists in the database
     if username in users_data:
@@ -61,8 +55,7 @@ def register_user(username, password, phone_number):
     users_data[username] = new_user
 
     # Save the updated database to the file
-    with open(USER_DB, 'w') as db_file:
-        json.dump(users_data, db_file, indent=2)
+    data_store(USER_DB, users_data)
 
     print(f"User '{username}' registered successfully.")
     return user_id

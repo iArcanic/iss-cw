@@ -13,14 +13,14 @@ from datetime import datetime
 
 if __name__ == '__main__':
 
-    # register_user("john_doe", "mySecurePassword", "07123456789")
-    user_id = "6967dcf0-fd7e-47ea-90a5-c10265650173"
+    # register_user("john_doe1", "mySecurePassword", "07123456789")
+    user_id = "c0c5e023-c82c-4c33-b7f7-b69159df8bab"
 
     # single_sign_on("john_doe")
 
-    # aes_key = generate_aes_key()
+    aes_key = generate_aes_key()
 
-    # store_key_in_hsm("6967dcf0-fd7e-47ea-90a5-c10265650173", aes_key)
+    store_key_in_hsm("c0c5e023-c82c-4c33-b7f7-b69159df8bab", aes_key)
 
     # user_retrieved_key = retrieve_key("6967dcf0-fd7e-47ea-90a5-c10265650173")
     # print(user_retrieved_key.hex())

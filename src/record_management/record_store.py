@@ -6,6 +6,7 @@ from datetime import datetime
 from src.key_management.key_retrieve import retrieve_key
 from src.encryption import *
 from src.role_check import *
+from src.data_manager import *
 
 RECORDS_DB = "data/records_db.json"
 
@@ -27,10 +28,4 @@ def record_store(owner_id, data, meta_data, permission):
     # Convert the ciphertext to a JSON-serializable format (Base64-encoded string)
     serialized_ciphertext = base64.b64encode(ciphertext).decode()
 
-    try:
-        with open(RECORDS_DB, "w") as db_file:
-            json.dump({"owner_id": owner_id, "data": serialized_ciphertext, "meta_data": meta_data}, db_file, indent=2)
-
-    except FileNotFoundError:
-        print(f"MedRecords database {RECORDS_DB} not found!")
-        return
+    data_store(RECORDS_DB, {"owner_id": owner_id, "data": serialized_ciphertext, "meta_data": meta_data})
