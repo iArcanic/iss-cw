@@ -8,7 +8,8 @@ from src.encryption import *
 from src.role_check import *
 from src.data_manager import *
 
-RECORDS_DB = "data/records_db.json"
+RECORDS_DB = "../../data/records_db.json"
+
 
 @role_check_decorator
 def record_store(owner_id, data, meta_data, permission):

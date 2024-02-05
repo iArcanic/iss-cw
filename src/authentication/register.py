@@ -1,13 +1,12 @@
 # register.py
 
-import secrets
-import json
 import bcrypt
 import uuid
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
 from src.data_manager import *
 
-USER_DB = "data/user_db.json"
+USER_DB = "../../data/user_db.json"
+
 
 def register_user(username, password, phone_number):
     users_data = data_read_return_empty_if_not_found(USER_DB)
@@ -57,5 +56,4 @@ def register_user(username, password, phone_number):
     # Save the updated database to the file
     data_store(USER_DB, users_data)
 
-    print(f"User '{username}' registered successfully.")
-    return user_id
+    print(f"User '{username}' registered successfully. Login with your new account to continue.")

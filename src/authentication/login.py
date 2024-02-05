@@ -1,13 +1,12 @@
 # login.py
 
-import secrets
-import json
 import bcrypt
-import uuid
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
 from src.data_manager import *
+from src.key_management.rsa_key_manager import *
 
 USER_DB = "data/user_db.json"
+
 
 def login_user(username, password):
     users_data = data_read(USER_DB)
@@ -35,6 +34,10 @@ def login_user(username, password):
 
         if entered_code == two_factor_code:
             print("Login successful.")
+            # Every time the user logins the RSA key is regenerated
+            # Used for transferring data across multiple clinic services
+            public_key = refresh_rsa_key(user_data["user_id"])
+            print(public_key)
             return user_data['user_id']
         else:
             print("2FA verification failed. Login aborted.")

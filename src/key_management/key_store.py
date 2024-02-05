@@ -3,7 +3,8 @@
 import json
 from src.data_manager import *
 
-HSM_DB = "data/hsm.json"
+HSM_DB = "../../data/hsm.json"
+
 
 def store_key_in_hsm(user_id, key):
     # Make new key entry

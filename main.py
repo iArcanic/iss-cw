@@ -12,35 +12,33 @@ from src.record_management.record_store import *
 from datetime import datetime
 
 if __name__ == '__main__':
-
     # register_user("john_doe1", "mySecurePassword", "07123456789")
-    user_id = "c0c5e023-c82c-4c33-b7f7-b69159df8bab"
+    login_user("john_doe1", "mySecurePassword")
 
     # single_sign_on("john_doe")
 
-    aes_key = generate_aes_key()
-
-    store_key_in_hsm("c0c5e023-c82c-4c33-b7f7-b69159df8bab", aes_key)
+    # aes_key = generate_aes_key()
+    # store_key_in_hsm("c0c5e023-c82c-4c33-b7f7-b69159df8bab", aes_key)
 
     # user_retrieved_key = retrieve_key("6967dcf0-fd7e-47ea-90a5-c10265650173")
     # print(user_retrieved_key.hex())
 
-    med_records_data = {
-        "blood_pressure": 120,
-        "blood_glucose": 120,
-        "blood_sugar": 120
-    }
+    # med_records_data = {
+    #     "blood_pressure": 120,
+    #     "blood_glucose": 120,
+    #     "blood_sugar": 120
+    # }
 
-    record_store(
-        owner_id=user_id,
-        data=med_records_data,
-        meta_data={
-            "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
-            "data_type": "MEDICAL_RECORD",
-            "timestamp": datetime.utcnow().isoformat()
-        },
-        permission="MEDICAL_RECORD_EDIT"
-    )
+    # record_store(
+    #     owner_id='6967dcf0-fd7e-47ea-90a5-c10265650173',
+    #     data=med_records_data,
+    #     meta_data={
+    #         "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+    #         "data_type": "MEDICAL_RECORD",
+    #         "timestamp": datetime.utcnow().isoformat()
+    #     },
+    #     permission="MEDICAL_RECORD_EDIT"
+    # )
 
     # ciphertext = aes_encrypt(aes_retrieved_key, plaintext_data.encode())
     # print("Encrypted Data:", ciphertext.hex())

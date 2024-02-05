@@ -2,7 +2,8 @@
 
 import json
 
-HSM_DB = "data/hsm.json"
+HSM_DB = "../data/hsm.json"
+
 
 def retrieve_key(user_id):
     try:

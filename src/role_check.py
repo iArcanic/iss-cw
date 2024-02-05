@@ -2,8 +2,9 @@
 
 import json
 
-USER_ROLES_DB = "data/user_roles_db.json"
-ROLE_PERMISSIONS_DB = "data/role_permissions_db.json"
+USER_ROLES_DB = "../data/user_roles_db.json"
+ROLE_PERMISSIONS_DB = "../data/role_permissions_db.json"
+
 
 def role_check_decorator(func):
     def wrapper(owner_id, *args, **kwargs):
@@ -28,7 +29,8 @@ def role_check_decorator(func):
                     if permission_name in role_permissions_data[role]["permissions"]:
                         return func(owner_id, *args, **kwargs)
                     else:
-                        raise PermissionError(f"User with ID {owner_id} does not have required permissions for this operation.")
+                        raise PermissionError(
+                            f"User with ID {owner_id} does not have required permissions for this operation.")
                 else:
                     print(f"Role {role} not found in role permissions data.")
         else:
