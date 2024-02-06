@@ -37,8 +37,7 @@ def login_user(username, password):
             # Every time the user logins the RSA key is regenerated
             # Used for transferring data across multiple clinic services
             public_key = refresh_rsa_key(user_data["user_id"])
-            print(public_key)
-            return user_data['user_id']
+            return user_data['user_id'], public_key
         else:
             print("2FA verification failed. Login aborted.")
     else:

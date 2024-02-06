@@ -3,30 +3,23 @@
 import json
 from src.data_manager import *
 
-HSM_DB = "../../data/hsm.json"
+HSM_DB = "data/hsm.json"
 
 
 def store_key_in_hsm(user_id, key):
-    # Make new key entry
-    key_entry = {
-        "user_id": user_id,
-        "key": key.hex()
-    }
-
     try:
-        # Try to open the existing database file
-        with open(HSM_DB, "r") as f:
-            existing_entries = [json.loads(line) for line in f]
-
-        # Check if user_id already exists in the database
-        for entry in existing_entries:
-            if entry["user_id"] == user_id:
-                print(f"User with ID '{user_id}' already has a key stored. Skipping duplicate entry.")
-                return False
-
-        # If user_id doesn't exist, add the new entry
-        data_store(HSM_DB, key_entry)
-
+        with open(HSM_DB, 'r') as file:
+            json_data = json.load(file)
     except FileNotFoundError:
-        print("HSM database not found.")
-        return False
+        json_data = {"aes_keys": []}
+
+    for entry in json_data["aes_keys"]:
+        if entry["user_id"] == user_id:
+            entry["key"] = key.hex()
+            break
+    else:
+        # If user_id not found, insert a new entry
+        json_data["aes_keys"].append({"user_id": user_id, "key": key.hex()})
+
+    with open(HSM_DB, 'w') as file:
+        json.dump(json_data, file, indent=2)

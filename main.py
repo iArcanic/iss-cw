@@ -9,39 +9,39 @@ from src.key_management.key_gen import *
 from src.key_management.key_store import *
 from src.key_management.key_retrieve import *
 from src.record_management.record_store import *
+from src.key_management.rsa_key_manager import *
 from datetime import datetime
 
 if __name__ == '__main__':
     # register_user("john_doe1", "mySecurePassword", "07123456789")
-    login_user("john_doe1", "mySecurePassword")
+    user_id, public_key = login_user("john_doe", "mySecurePassword")
+    # print(f"Logged in as {user_id}")
+    # print(f"Public key: {public_key}")
 
     # single_sign_on("john_doe")
 
-    # aes_key = generate_aes_key()
-    # store_key_in_hsm("c0c5e023-c82c-4c33-b7f7-b69159df8bab", aes_key)
+    aes_key = generate_aes_key()
+    store_key_in_hsm(user_id, aes_key)
 
-    # user_retrieved_key = retrieve_key("6967dcf0-fd7e-47ea-90a5-c10265650173")
-    # print(user_retrieved_key.hex())
+    user_retrieved_key = retrieve_key(user_id)
+    print(f"Retrieved user_id key: {user_retrieved_key}")
 
-    # med_records_data = {
-    #     "blood_pressure": 120,
-    #     "blood_glucose": 120,
-    #     "blood_sugar": 120
-    # }
+    med_records_data = {
+        "blood_pressure": 120,
+        "blood_glucose": 120,
+        "blood_sugar": 120
+    }
 
-    # record_store(
-    #     owner_id='6967dcf0-fd7e-47ea-90a5-c10265650173',
-    #     data=med_records_data,
-    #     meta_data={
-    #         "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
-    #         "data_type": "MEDICAL_RECORD",
-    #         "timestamp": datetime.utcnow().isoformat()
-    #     },
-    #     permission="MEDICAL_RECORD_EDIT"
-    # )
+    ciphertext = rsa_encrypt(str(med_records_data), public_key)
+    print(f"Ciphertext: {ciphertext}")
 
-    # ciphertext = aes_encrypt(aes_retrieved_key, plaintext_data.encode())
-    # print("Encrypted Data:", ciphertext.hex())
-
-    # decrypted_data = aes_decrypt(aes_retrieved_key, ciphertext[:16], ciphertext[16:])
-    # print("Decrypted Data:", decrypted_data.decode())
+    record_store(
+        owner_id=user_id,
+        data=ciphertext,
+        meta_data={
+            "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+            "data_type": "MEDICAL_RECORD",
+            "timestamp": datetime.utcnow().isoformat()
+        },
+        permission="MEDICAL_RECORD_EDIT"
+    )

@@ -1,4 +1,12 @@
 {
-  "user_id": "c0c5e023-c82c-4c33-b7f7-b69159df8bab",
-  "key": "33fb4d0470f526f7862c79b7df2cf2060148b4f0a8db8123afae19c7419c8cfa"
+  "aes_keys": [
+    {
+      "user_id": "c0c5e023-c82c-4c33-b7f7-b69159df8bab",
+      "key": "4ac45e1552ef598e1ae19a920435c7c8f4dc3acb16378655e2a61530b3e1ca8c"
+    },
+    {
+      "user_id": "6967dcf0-fd7e-47ea-90a5-c10265650173",
+      "key": "7bff09022362daf1ff296a79af8671671c1c20e6201d313cf543e2447f89a6cb"
+    }
+  ]
 }

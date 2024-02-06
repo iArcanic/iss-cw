@@ -2,8 +2,8 @@
 
 import json
 
-USER_ROLES_DB = "../data/user_roles_db.json"
-ROLE_PERMISSIONS_DB = "../data/role_permissions_db.json"
+USER_ROLES_DB = "data/user_roles_db.json"
+ROLE_PERMISSIONS_DB = "data/role_permissions_db.json"
 
 
 def role_check_decorator(func):
