@@ -28,5 +28,17 @@ def record_store(owner_id, data, meta_data, permission, decrypted_data):
 
     # Convert the ciphertext to a JSON-serializable format (Base64-encoded string)
     serialized_ciphertext = base64.b64encode(ciphertext).decode()
+    # print(f"Serialized ciphertext: {serialized_ciphertext}")
 
-    data_store(RECORDS_DB, {"owner_id": owner_id, "data": serialized_ciphertext, "meta_data": meta_data})
+    try:
+        with open(RECORDS_DB, 'r') as file:
+            json_data = json.load(file)
+    except FileNotFoundError:
+        json_data = {"records": []}
+
+    try:
+        with open(RECORDS_DB, 'w') as file:
+            json_data["records"].append({"owner_id": owner_id, "data": serialized_ciphertext, "meta_data": meta_data})
+            json.dump(json_data, file, indent=2)
+    except FileNotFoundError:
+        print(f"{RECORDS_DB} not found.")
