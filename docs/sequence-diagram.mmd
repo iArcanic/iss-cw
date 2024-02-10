@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant user as API client
+    participant auth as Auth system
+    participant user_store as User store
+    participant key_management as Key management
+    participant key_store as Key store
+    participant crypto as Crypto operations
+    participant role_store as Role store
+    participant record_store as Record store
+
+    user->>+auth: 1. Register
+    auth->>+user: 2. Send two factor authentication
+    auth->>+user_store: 3. Store new user credentials
+    auth->>+user: 4. Registration success
+    user->>+auth: 5. Login with credentials
+    auth->>+user_store: 6. Check credentials
+    auth->>+user: 7. Send two factor authentication
+    auth->>+user: 8. Login success
+
+    alt Upon successful login
+        key_management->>+user: 9. Generate RSA public key
+        key_management->>+key_store: 10. Generate and store RSA private key
+    end
+
+
