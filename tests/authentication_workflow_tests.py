@@ -29,7 +29,6 @@ def test_register_login_user(mock_generate_login_2fa_code, mock_generate_registe
     phone_number = "0123456789"
 
     mock_generate_register_2fa_code.return_value = "123456"
-
     register_user(username, password, phone_number)
 
     users_data = data_read_return_empty_if_not_found(USERS_DB)
@@ -41,7 +40,6 @@ def test_register_login_user(mock_generate_login_2fa_code, mock_generate_registe
     assert "phone_number" in users_data[username]
 
     mock_generate_login_2fa_code.return_value = "123456"
-
     user_id, public_key = login_user(username, password)
 
     assert user_id == users_data[username]["user_id"]

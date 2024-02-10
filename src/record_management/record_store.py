@@ -14,6 +14,7 @@ RECORDS_DB = "data/records_db.json"
 @rsa_decrypt_data_decorator
 @role_check_decorator
 def record_store(owner_id, data, meta_data, permission, decrypted_data):
+    print(f"record_store.record_store -> Data received encrypted: {data}")
     key = retrieve_key(owner_id)
 
     # Decrypt data from data transmission

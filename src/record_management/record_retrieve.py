@@ -20,10 +20,11 @@ def record_retrieve(owner_id, patient_id, permission):
         if record["owner_id"] == owner_id and record["meta_data"]["patient_id"] == patient_id:
             serialized_ciphertext = record["data"]
             ciphertext = base64.b64decode(serialized_ciphertext)
+            print(f"record_store.record_store -> Encrypted data at rest {ciphertext}")
             iv = ciphertext[:16]
             actual_ciphertext = ciphertext[16:]
             plaintext = aes_decrypt(aes_key, iv, actual_ciphertext)
-            record["data"] = plaintext
+            record["data"] = plaintext.decode()
             records_list.append(record)
 
     return records_list
