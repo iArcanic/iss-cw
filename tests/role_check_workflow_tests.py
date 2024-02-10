@@ -42,6 +42,6 @@ def test_role_check_workflow(mock_generate_login_2fa_code, mock_generate_registe
     except PermissionError as e:
         assert str(e) == (f"role_check.role_check_decorator -> User with ID {user_id} does not have required "
                           f"permissions for this operation.")
-        print("PermissionError raised as expected. User does not have the required role.")
+        print(f"PermissionError, {e}, raised as expected. User does not have the required role.")
     else:
         assert False, "Expected PermissionError was not raised."

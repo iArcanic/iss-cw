@@ -1,5 +1,8 @@
 {
   "aes_keys": [
-
+    {
+      "user_id": "82556c24-be71-4fcf-bd23-c9deddde26b9",
+      "key": "f816eaa0b66e84f07403efc495c177a482cd77858c9761c9057f30e607766016"
+    }
   ]
 }

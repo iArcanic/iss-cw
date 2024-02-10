@@ -1,8 +1,6 @@
 # record_retrieve.py
 
-import base64
-
-from src.decryption import *
+from src.decryption import aes_data_decrypt
 from src.key_management.key_retrieve import *
 from src.role_check import *
 
@@ -18,13 +16,9 @@ def record_retrieve(owner_id, patient_id, permission):
 
     for record in records_data["records"]:
         if record["owner_id"] == owner_id and record["meta_data"]["patient_id"] == patient_id:
-            serialized_ciphertext = record["data"]
-            ciphertext = base64.b64decode(serialized_ciphertext)
-            print(f"record_store.record_store -> Encrypted data at rest {ciphertext}")
-            iv = ciphertext[:16]
-            actual_ciphertext = ciphertext[16:]
-            plaintext = aes_decrypt(aes_key, iv, actual_ciphertext)
-            record["data"] = plaintext.decode()
+            record["data"] = aes_data_decrypt(aes_key, record["data"])
             records_list.append(record)
 
     return records_list
+
+

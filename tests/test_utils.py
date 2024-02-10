@@ -5,7 +5,7 @@ from src.authentication.login import login_user
 from src.authentication.register import register_user
 from src.data_manager import data_store
 from src.key_management.key_gen import generate_aes_key
-from src.key_management.key_store import store_key_in_hsm
+from src.key_management.key_store import store_aes_key
 
 USER_ROLES_DB = "data/user_roles_db.json"
 
@@ -42,7 +42,7 @@ def assign_user_to_role(user_id, role):
 
 def generate_and_store_aes_key(user_id):
     aes_key = generate_aes_key()
-    store_key_in_hsm(user_id, aes_key)
+    store_aes_key(user_id, aes_key)
 
 
 def assert_patient_record_retrieved_decrypted(data, record):

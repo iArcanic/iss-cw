@@ -1,5 +1,13 @@
 {
   "records": [
-
+    {
+      "owner_id": "82556c24-be71-4fcf-bd23-c9deddde26b9",
+      "data": "kKMWlmAlUZ3gQcoX1QskTIC7Ib7T0Za/vvUeqrYNFHPJp5DusWmOtAjnRsBXPFLeXfnjgMJ6TBLRzSLiJxYd",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-10T18:53:01.343620"
+      }
+    }
   ]
 }
