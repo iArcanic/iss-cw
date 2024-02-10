@@ -23,7 +23,10 @@ def login_user(username, password):
     phone_number = user_data.get('phone_number', None)
 
     # Get the user's password
-    entered_password = input("Enter your password: ")
+    if password is None:
+        entered_password = input("Enter your password: ")
+    else:
+        entered_password = password
 
     # Verify the entered password
     if bcrypt.checkpw(entered_password.encode('utf-8'), stored_password_hash.encode('utf-8')):

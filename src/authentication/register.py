@@ -7,7 +7,7 @@ import bcrypt
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
 from src.data_manager import *
 
-USER_DB = "../../data/user_db.json"
+USER_DB = "data/user_db.json"
 
 
 def register_user(username, password, phone_number):

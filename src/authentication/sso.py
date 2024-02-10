@@ -2,7 +2,7 @@
 
 import json
 
-THIRD_PARTY_DB = "../data/third_party_db.json"
+THIRD_PARTY_DB = "data/third_party_db.json"
 
 
 def single_sign_on(username):
