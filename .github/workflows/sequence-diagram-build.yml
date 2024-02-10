@@ -27,5 +27,5 @@ jobs:
       - name: Upload .svg artifact
         uses: actions/upload-artifact@v2
         with:
-          name: pdf-artifact
+          name: sequence-diagram-artifact
           path: sequence-diagram.svg
