@@ -17,6 +17,10 @@ def login_user(username, password):
         print("login.login_user -> Username not found. Please register first.")
         return
 
+    if username in users_data and "third_party_status" in users_data[username]:
+        print("login.login_user -> Please use SSO to login.")
+        return
+
     user_data = users_data[username]
     stored_password_hash = user_data['hashed_password']
     salt = user_data['salt']

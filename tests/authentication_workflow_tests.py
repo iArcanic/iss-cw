@@ -1,11 +1,13 @@
 from src.authentication.register import *
 from src.authentication.login import *
+from src.authentication.sso import *
 from src.data_manager import *
 from unittest.mock import patch
 import random
 import string
 
 USERS_DB = "data/user_db.json"
+THIRD_PARTY_DB = "data/third_party_db.json"
 
 
 def generate_random_username(length=8):
@@ -44,3 +46,13 @@ def test_register_login_user(mock_generate_login_2fa_code, mock_generate_registe
 
     assert user_id == users_data[username]["user_id"]
     assert public_key is not None
+
+
+def test_login_sso_login_not_allowed_directly():
+    username = "joe_smith"
+
+    single_sign_on(username)
+    users_data = data_read_return_empty_if_not_found(USERS_DB)
+
+    assert username in users_data
+    assert login_user(username, "dummy_password") is None
