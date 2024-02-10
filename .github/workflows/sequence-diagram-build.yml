@@ -1,0 +1,31 @@
+name: Sequence diagram build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: '14'
+
+      - name: Install Mermaid
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Convert Mermaid .mmd Diagram File To .svg
+        run: mmdc -i docs/sequence-diagram.mmd -o sequence-diagram.svg
+
+      - name: Upload .svg artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pdf-artifact
+          path: sequence-diagram.svg

@@ -1,4 +1,4 @@
-name: Build and Check
+name: Report build
 
 on:
   push:
