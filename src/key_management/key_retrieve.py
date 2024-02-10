@@ -12,5 +12,5 @@ def retrieve_key(user_id):
         if entry["user_id"] == user_id:
             return bytes.fromhex(entry["key"])
 
-    print(f"Key for user {user_id} not found in HSM!")
+    print(f"key_retrieve.retrieve_key -> Key for user {user_id} not found in {HSM_DB}!")
     return None

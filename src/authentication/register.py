@@ -1,7 +1,9 @@
 # register.py
 
-import bcrypt
 import uuid
+
+import bcrypt
+
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
 from src.data_manager import *
 
@@ -13,7 +15,7 @@ def register_user(username, password, phone_number):
 
     # Check if the username already exists in the database
     if username in users_data:
-        print(f"Username '{username}' already exists. Please choose a different username.")
+        print(f"register.register_user -> Username '{username}' already exists. Please choose a different username.")
         return
 
     # Generate a 2FA code
@@ -27,9 +29,9 @@ def register_user(username, password, phone_number):
 
     # Check if the entered code matches the generated 2FA code
     if entered_code == two_factor_code:
-        print("2FA verification successful.")
+        print("register.register_user -> 2FA verification successful.")
     else:
-        print("2FA verification failed. Registration aborted.")
+        print("register.register_user -> 2FA verification failed. Registration aborted.")
         return
 
     # Generate a unique user_id using UUID
@@ -56,4 +58,5 @@ def register_user(username, password, phone_number):
     # Save the updated database to the file
     data_store(USER_DB, users_data)
 
-    print(f"User '{username}' registered successfully. Login with your new account to continue.")
+    print(f"register.register_user -> User '{username}' registered successfully. Login with your new account to "
+          f"continue.")

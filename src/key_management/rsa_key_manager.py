@@ -1,11 +1,10 @@
 import json
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
-import base64
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 def replace_or_insert_key_from_file(user_id, new_key, file_path="data/rsa_hsm.json"):
@@ -61,30 +60,6 @@ def generate_key_pair():
     return private_key, public_key
 
 
-# def sign_data(data, private_key):
-#     signature = private_key.sign(
-#         data.encode(),
-#         padding.PSS(
-#             mgf=padding.MGF1(hashes.SHA256()),
-#             salt_length=padding.PSS.MAX_LENGTH
-#         ),
-#         hashes.SHA256()
-#     )
-#     return base64.b64encode(signature).decode()
-#
-#
-# def verify_signature(data, signature, public_key):
-#     public_key.verify(
-#         base64.b64decode(signature),
-#         data.encode(),
-#         padding.PSS(
-#             mgf=padding.MGF1(hashes.SHA256()),
-#             salt_length=padding.PSS.MAX_LENGTH
-#         ),
-#         hashes.SHA256()
-#     )
-
-
 def rsa_encrypt(data, public_key_pem):
     public_key = load_public_key_from_pem_string(public_key_pem)
     ciphertext = public_key.encrypt(
@@ -126,31 +101,3 @@ def load_public_key_from_pem_string(pem_string):
         backend=default_backend()
     )
     return public_key
-
-
-# # Sample data
-# data = "Patient records"
-#
-# # Use asymmetric keys
-# private_key, public_key = generate_key_pair()
-#
-# # Sign data
-# signature = sign_data(data, private_key)
-# print(f"Signature:\n{signature}\n")
-#
-# # Verify after transfer
-# verify_signature(data, signature, public_key)
-# print("Signature verified successfully.")
-
-# sample_data = {
-#     "blood_pressure": 120,
-#     "blood_glucose": 120,
-#     "blood_sugar": 120
-# }
-#
-# sample_data = str(sample_data)
-#
-# private_key, public_key = generate_key_pair()
-#
-# ciphertext = rsa_encrypt(sample_data, pem_convert_public_key(public_key))
-# print(rsa_decrypt(ciphertext, pem_convert_private_key(private_key)))

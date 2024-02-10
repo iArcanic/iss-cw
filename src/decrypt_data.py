@@ -1,16 +1,14 @@
 # decrypt_data.py
 
-from src.key_management.rsa_key_manager import *
 from src.data_manager import *
+from src.key_management.rsa_key_manager import *
 
 
-def decrypt_data_decorator(func):
+def rsa_decrypt_data_decorator(func):
     def wrapper(owner_id, data, *args, **kwargs):
-        print(f"Data: {data}")
         rsa_hsm_data = data_read("data/rsa_hsm.json")
 
         for key_info in rsa_hsm_data["rsa_keys"]:
-            print(f"Key: {key_info}")
             if key_info["user_id"] == owner_id:
                 private_key_pem = key_info["key"]
                 decrypted_data = rsa_decrypt(data, private_key_pem)

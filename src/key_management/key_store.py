@@ -1,6 +1,5 @@
 # key_store.py
 
-import json
 from src.data_manager import *
 
 HSM_DB = "data/hsm.json"

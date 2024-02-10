@@ -1,6 +1,7 @@
 # login.py
 
 import bcrypt
+
 from src.authentication.two_fa import generate_2fa_code, send_2fa_code
 from src.data_manager import *
 from src.key_management.rsa_key_manager import *
@@ -13,7 +14,7 @@ def login_user(username, password):
 
     # Check if the username exists in the database
     if username not in users_data:
-        print("Username not found. Please register first.")
+        print("login.login_user -> Username not found. Please register first.")
         return
 
     user_data = users_data[username]
@@ -33,12 +34,12 @@ def login_user(username, password):
         entered_code = input("Enter the 2FA code: ")
 
         if entered_code == two_factor_code:
-            print("Login successful.")
+            print("login.login_user -> Login successful.")
             # Every time the user logins the RSA key is regenerated
             # Used for transferring data across multiple clinic services
             public_key = refresh_rsa_key(user_data["user_id"])
             return user_data['user_id'], public_key
         else:
-            print("2FA verification failed. Login aborted.")
+            print("login.login_user -> 2FA verification failed. Login aborted.")
     else:
-        print("Incorrect password. Login aborted.")
+        print("login.login_user -> Incorrect password. Login aborted.")

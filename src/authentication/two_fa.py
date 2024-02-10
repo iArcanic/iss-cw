@@ -10,4 +10,4 @@ def generate_2fa_code():
 
 def send_2fa_code(phone_number, code):
     # Simulate sending the 2FA code to the user's phone (replace this with actual SMS or authenticator app integration)
-    print(f"2FA code '{code}' sent to {phone_number}.")
+    print(f"two_fa.send_2fa_code -> 2FA code '{code}' sent to {phone_number}.")

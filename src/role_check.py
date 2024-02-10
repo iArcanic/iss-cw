@@ -16,7 +16,8 @@ def role_check_decorator(func):
                 role_permissions_data = json.load(role_permissions_file)
 
         except FileNotFoundError:
-            print(f"User roles database or role permissions database not found.")
+            print(f"role_check.role_check_decorator -> {USER_ROLES_DB} database or {ROLE_PERMISSIONS_DB} database not "
+                  f"found.")
             return
 
         if owner_id in user_roles_data:
@@ -30,10 +31,11 @@ def role_check_decorator(func):
                         return func(owner_id, *args, **kwargs)
                     else:
                         raise PermissionError(
-                            f"User with ID {owner_id} does not have required permissions for this operation.")
+                            f"role_check.role_check_decorator -> User with ID {owner_id} does not have required "
+                            f"permissions for this operation.")
                 else:
-                    print(f"Role {role} not found in role permissions data.")
+                    print(f"role_check.role_check_decorator -> Role {role} not found in role permissions data.")
         else:
-            print(f"User with ID {owner_id} not found in user roles data.")
+            print(f"role_check.role_check_decorator -> User with ID {owner_id} not found in user roles data.")
 
     return wrapper
