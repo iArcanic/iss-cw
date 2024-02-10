@@ -6,7 +6,8 @@ from src.authentication.register import register_user
 from src.data_manager import data_store
 from src.key_management.key_gen import generate_aes_key
 from src.key_management.key_store import store_key_in_hsm
-from tests.data_transmission_workflow_tests import USER_ROLES_DB
+
+USER_ROLES_DB = "data/user_roles_db.json"
 
 
 def generate_random_username(length=8):
