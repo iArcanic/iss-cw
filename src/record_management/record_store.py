@@ -2,7 +2,6 @@
 
 import base64
 
-from src.data_manager import *
 from src.decrypt_data import *
 from src.encryption import *
 from src.key_management.key_retrieve import retrieve_key

@@ -386,6 +386,24 @@
         "data_type": "MEDICAL_RECORD",
         "timestamp": "2024-02-10T16:06:01.478345"
       }
+    },
+    {
+      "owner_id": "358e8ab0-b0cd-4d53-9577-ccde83839147",
+      "data": "KT4FvTZPZquMGyoM/yx6QRhdSELHwUC8VuyMrovSrzxvVPxeW5NjhsBtP174J9D+OmyZjCEWFq4wn06BAHw7",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-10T17:35:36.316299"
+      }
+    },
+    {
+      "owner_id": "73869f52-0ace-43d2-9da1-c9762e97072b",
+      "data": "ce2rXvuci+CPbhc3843fR6dppyQ2JPR6SV6jc2goN184OKHlo2ShOynu3cs6uvraLwSDBKiSbTnKpW4oJMTx",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-10T17:36:21.143961"
+      }
     }
   ]
 }

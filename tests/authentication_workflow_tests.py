@@ -1,23 +1,11 @@
-from src.authentication.register import *
-from src.authentication.login import *
+from unittest.mock import patch
+
 from src.authentication.sso import *
 from src.data_manager import *
-from unittest.mock import patch
-import random
-import string
+from tests.test_utils import *
 
 USERS_DB = "data/user_db.json"
 THIRD_PARTY_DB = "data/third_party_db.json"
-
-
-def generate_random_username(length=8):
-    characters = string.ascii_letters + string.digits  # You can include other characters if needed
-    return ''.join(random.choice(characters) for _ in range(length))
-
-
-def generate_random_password(length=12):
-    characters = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choice(characters) for _ in range(length))
 
 
 @patch('builtins.input', return_value="123456")
