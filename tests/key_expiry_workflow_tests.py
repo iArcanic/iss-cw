@@ -4,7 +4,7 @@ from unittest.mock import patch
 from src.key_management.key_store import *
 from src.record_management.record_retrieve import *
 from src.record_management.record_store import *
-from tests.test_utils import *
+from tests.utils.test_utils import *
 
 
 @patch('builtins.input', return_value="123456")

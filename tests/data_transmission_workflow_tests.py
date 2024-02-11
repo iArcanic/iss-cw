@@ -3,8 +3,8 @@ from datetime import datetime
 from src.record_management.record_retrieve import *
 from src.record_management.record_store import *
 from tests.authentication_workflow_tests import *
-from tests.test_utils import *
-from tests.test_utils import assign_user_to_role, generate_and_store_aes_key, assert_record_retrieved_decrypted
+from tests.utils.test_utils import *
+from tests.utils.test_utils import assign_user_to_role, generate_and_store_aes_key, assert_record_retrieved_decrypted
 
 USERS_DB = "data/user_db.json"
 USER_ROLES_DB = "data/user_roles_db.json"

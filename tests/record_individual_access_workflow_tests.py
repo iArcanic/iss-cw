@@ -2,9 +2,9 @@ from datetime import datetime
 from unittest.mock import patch
 
 from src.key_management.rsa_key_manager import rsa_encrypt
-from src.record_management.record_retrieve import record_retrieve, record_retrieve_by_id
+from src.record_management.record_retrieve import record_retrieve_by_id
 from src.record_management.record_store import record_store
-from tests.test_utils import create_user, assert_record_retrieved_decrypted
+from tests.utils.test_utils import create_user, assert_record_retrieved_decrypted
 
 
 @patch('builtins.input', return_value="123456")

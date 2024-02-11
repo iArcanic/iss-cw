@@ -1,8 +1,7 @@
 from unittest.mock import patch
 
 from src.authentication.sso import *
-from src.data_manager import *
-from tests.test_utils import *
+from tests.utils.test_utils import *
 
 USERS_DB = "data/user_db.json"
 THIRD_PARTY_DB = "data/third_party_db.json"

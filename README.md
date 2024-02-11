@@ -47,14 +47,51 @@ A Python simulation of various APIs that use cryptographic implementations to me
 
 ## Installation
 
-## Usage
+### Prerequisites
 
-### 1. Clone this repository
+#### Python version
+
+Ensure that your Python environment is at minimum Python 3.6 or higher.
+
+> NOTE: Older versions may work but Python 3.6+ is recommended
+
+You can install a version of Python 3.x from their official website suitable for your system OS [here](https://www.python.org/downloads/).
+
+#### `git` CLI
+
+To clone this repository and the general use of GitHub version control tools and systems, the `git` CLI is required.
+
+You can install a version of `git` from their official website suitable for your system OS [here](https://git-scm.com/downloads).
+
+### Clone this repository
+
+Clone the project repository from GitHub.
 
 ```bash
 git clone https://github.com/iArcanic/iss-cw
 ```
 
-### 2. Install required Python libraries and packages
+### Set up virtual Python environment [optional]
+
+Optionally, set up a virtual Python `3.x` environment to isolate project dependencies from system-wide dependencies.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### Install required Python libraries and packages
+
+Navigate to the repository root folder (i.e. `iss.cw`) and install the required Python packages.
+
+```bash
+pip3 install -r requirements.txt
+```
+
+## Usage
+
+All user journey workflows to demonstrate the cryptographic simulation are implemented as Python test cases, within the [`tests`](https://github.com/iArcanic/iss-cw/tree/main/tests) folder.
+
+All the tests use Python's `pytest` library engine.
 
 ## Assumptions
