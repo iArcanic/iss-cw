@@ -1,6 +1,7 @@
 # record_store.py
 
 import base64
+import uuid
 
 from src.decrypt_data import *
 from src.encryption import *
@@ -12,7 +13,9 @@ RECORDS_DB = "data/records_db.json"
 
 @rsa_decrypt_data_decorator
 @role_check_decorator
-def record_store(owner_id, data, meta_data, permission, decrypted_data):
+def record_store(owner_id, data, meta_data, permission, decrypted_data, individual_access=None):
+    if individual_access is None:
+        individual_access = []
     print(f"record_store.record_store -> Data received encrypted: {data}")
     key = retrieve_key(owner_id)
 
@@ -33,7 +36,13 @@ def record_store(owner_id, data, meta_data, permission, decrypted_data):
 
     try:
         with open(RECORDS_DB, 'w') as file:
-            json_data["records"].append({"owner_id": owner_id, "data": serialized_ciphertext, "meta_data": meta_data})
+            record_id = str(uuid.uuid4())
+
+            json_data["records"].append(
+                {"record_id": record_id, "owner_id": owner_id, "data": serialized_ciphertext,
+                 "meta_data": meta_data, "individual_access": individual_access})
             json.dump(json_data, file, indent=2)
+
+            return record_id
     except FileNotFoundError:
         print(f"record_store.record_store -> {RECORDS_DB} not found.")

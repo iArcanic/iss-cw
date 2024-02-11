@@ -3,7 +3,7 @@ import string
 
 from src.authentication.login import login_user
 from src.authentication.register import register_user
-from src.data_manager import data_store
+from src.data_manager import data_store, data_read, data_read_return_empty_if_not_found
 from src.key_management.key_gen import generate_aes_key
 from src.key_management.key_store import store_aes_key
 
@@ -32,12 +32,12 @@ def register_user_and_login(mock_generate_login_2fa_code, mock_generate_register
 
 
 def assign_user_to_role(user_id, role):
+    user_roles_data = data_read_return_empty_if_not_found(USER_ROLES_DB)
     new_user_role = {
-        f"{user_id}": {
-            "roles": [role]
-        }
+        "roles": [role]
     }
-    data_store(USER_ROLES_DB, new_user_role)
+    user_roles_data[user_id] = new_user_role
+    data_store(USER_ROLES_DB, user_roles_data)
 
 
 def generate_and_store_aes_key(user_id):
@@ -45,6 +45,14 @@ def generate_and_store_aes_key(user_id):
     store_aes_key(user_id, aes_key)
 
 
-def assert_patient_record_retrieved_decrypted(data, record):
-    replace = str(record[0]["data"]).replace("\"", "")
+def assert_record_retrieved_decrypted(data, record):
+    replace = str(record["data"]).replace("\"", "")
     assert replace == data
+
+
+def create_user(mock_generate_login_2fa_code, mock_generate_register_2fa_code, role):
+    public_key, user_id = register_user_and_login(mock_generate_login_2fa_code, mock_generate_register_2fa_code)
+    generate_and_store_aes_key(user_id)
+    assign_user_to_role(user_id, role)
+    print(f"User assigned to role of {role}")
+    return public_key, user_id

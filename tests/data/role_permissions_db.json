@@ -28,5 +28,11 @@
             "VIEW_OWN_RECORDS",
             "VIEW_BILLING_INFO"
         ]
+    },
+    "research_scientist": {
+        "permissions": [
+            "EDIT_RESEARCH_RECORDS",
+            "VIEW_RESEARCH_RECORDS"
+        ]
     }
 }

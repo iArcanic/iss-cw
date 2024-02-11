@@ -17,7 +17,8 @@ def rsa_decrypt_data_decorator(func):
                     data=data,
                     meta_data=kwargs.get("meta_data"),
                     permission=kwargs.get("permission"),
-                    decrypted_data=decrypted_data
+                    decrypted_data=decrypted_data,
+                    individual_access=kwargs.get("individual_access")
                 )
 
     return wrapper
