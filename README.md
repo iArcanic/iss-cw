@@ -75,9 +75,17 @@ git clone https://github.com/iArcanic/iss-cw
 
 Optionally, set up a virtual Python `3.x` environment to isolate project dependencies from system-wide dependencies.
 
+First install Python virtual environment.
+
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+pip3 install virtualenv
+```
+
+Create a new virtual environment. Replace `<virtual-environment-name>` with the actual name you want to give the virtual environment.
+
+```bash
+python3 -m venv <virtual-environment-name>
+source <virtual-environment-name>/bin/activate
 ```
 
 ### Install required Python libraries and packages
@@ -88,10 +96,28 @@ Navigate to the repository root folder (i.e. `iss.cw`) and install the required 
 pip3 install -r requirements.txt
 ```
 
+If you are optionally using a Python virtual environment, check if the packages from `requirements.txt` have been installed.
+
+```bash
+pip3 list
+```
+
+If you run the same command outside your Python virtual environment (or before it has been activated), you will see discrepancies in the install Python libraries. This not only verifies that the required packages have been installed, but helps to differentiate whether you are within your Python virtual environment.  
+
 ## Usage
 
 All user journey workflows to demonstrate the cryptographic simulation are implemented as Python test cases, within the [`tests`](https://github.com/iArcanic/iss-cw/tree/main/tests) folder.
 
 All the tests use Python's `pytest` library engine.
+
+### Set environment variable
+
+Before running the tests, ensure that the `PYTHONPATH` environment variable includes the path to the project. This ensures that the Python interpreter can find the project modules.
+
+Replace `/path/to/project` with the actual path to your project directory.
+
+```bash
+export PYTHONPATH=/path/to/project:$PYTHONPATH
+```
 
 ## Assumptions
