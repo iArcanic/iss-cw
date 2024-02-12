@@ -1,0 +1,104 @@
+name: Docs CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  report_build:
+    name: Report PDF Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install -g markdownlint-cli
+
+    - name: Install Pandoc and LaTeX
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pandoc
+        sudo apt-get install -y pandoc-citeproc
+        sudo apt-get install -y texlive-xetex
+
+    - name: Install BibTeX
+      run: |
+        sudo apt-get install -y bibtex2html
+
+    - name: Check Markdown syntax
+      run: npx markdownlint '**/*.md' || true
+
+    - name: Check BibTeX syntax
+      run: bibtexlint --glob '**/*.bib' || true
+
+    - name: Set timestamp
+      id: timestamp
+      run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
+
+    - name: Compile Markdown to PDF
+      run: |
+        timestamp=$(date +"%Y%m%d%H%M%S")
+        pandoc docs/report/iss-report.md --filter pandoc-citeproc -o "iss-report-${{ steps.timestamp.outputs.timestamp }}.pdf"
+
+    - name: Upload PDF artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: pdf-artifact
+        path: "iss-report-${{ steps.timestamp.outputs.timestamp }}.pdf"
+
+  sequence_diagram_build:
+    name: Mermaid Sequence Diagram SVG Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+
+      - name: Install Mermaid
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Convert Mermaid .mmd Diagram File To .svg
+        run: mmdc -i docs/sequence-diagram.mmd -o sequence-diagram.svg
+
+      - name: Upload .svg artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: sequence-diagram-artifact
+          path: sequence-diagram.svg
+
+  create_artifact_zip:
+    name: Create Artifact Zip
+    runs-on: ubuntu-latest
+    needs: [ report_build, sequence_diagram_build ]
+
+    steps:
+      - name: Create artifact directory
+        run: mkdir artifact
+
+      - name: Copy PDF artifact
+        run: cp -r ${{ github.workspace }}/pdf-artifact artifact
+
+      - name: Copy SVG artifact
+        run: cp -r ${{ github.workspace }}/sequence-diagram-artifact artifact
+
+      - name: Zip artifacts
+        run: zip -r artifacts.zip artifact
+
+      - name: Upload artifact zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: combined-artifacts
+          path: artifacts.zip
