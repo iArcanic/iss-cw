@@ -6,6 +6,7 @@ from src.authentication.two_fa import generate_2fa_code, send_2fa_code
 from src.data_manager import *
 from src.key_management.rsa_key_manager import *
 
+# User database simulation
 USER_DB = "data/user_db.json"
 
 
