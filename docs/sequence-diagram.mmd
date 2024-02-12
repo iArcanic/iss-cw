@@ -5,9 +5,13 @@ sequenceDiagram
     participant key_management as Key management
     participant key_store as Key store
     participant crypto as Crypto operations
-    participant role_store as Role store
+    participant record_management as Record management
     participant record_store as Record store
+    participant role_management as Role management
+    participant role_store as Role store
 
+    %% User auth workflow
+    Note over user,role_store: User authentication workflow
     user->>+auth: 1. Register
     auth->>+user: 2. Send two factor authentication
     auth->>+user_store: 3. Store new user credentials
@@ -16,10 +20,68 @@ sequenceDiagram
     auth->>+user_store: 6. Check credentials
     auth->>+user: 7. Send two factor authentication
     auth->>+user: 8. Login success
-
     alt Upon successful login
         key_management->>+user: 9. Generate RSA public key
         key_management->>+key_store: 10. Generate and store RSA private key
     end
+    key_management->>+key_store: 11. Generate and store AES key
 
+    %% Record store workflow
+    Note over user,role_store: User record store workflow
+    Note over user,key_store: User authentication workflow is executed
+    user->>+crypto: 12. User sends record data to store
+    key_management->>+record_management: 13. Get user's AES key
+    crypto->>+record_management: 14. AES encrypt data
+    role_management->>+role_store: 15. Check user role
+    role_management->>+record_management: 16. Role authorisation success
+    alt Upon successful role access
+        crypto->>+record_management: 17. RSA encrypt data
+        key_management->>+record_management: 17. Get RSA key
+        crypto->>+record_management: 18. RSA decrypt
+        record_management->>+record_store: 19. Store record
+    end
 
+    %% Record retrieve workflow
+    Note over user,role_store: User record retrieve workflow
+    Note over user,key_store: User authentication workflow is executed
+    user->>+record_management: 20. User retrieves record
+    role_management->>+role_store: 21. Check user role
+    role_management->>+record_management: 22. Role authorisation success
+    alt Upon successful role access
+        crypto->>+record_management: 23. RSA encrypt data
+        key_management->>+record_management: 17. Get RSA key
+        crypto->>+record_management: 24. RSA decrypt
+        key_management->>+record_management: 25. Get user's AES key
+        crypto->>+record_management: 26. AES decrypt data
+        record_management->>+user: 27. Send decrypted record
+    end
+
+    %% Individual record access workflow
+    Note over user,role_store: Individual record access workflow
+    Note over user,key_store: User authentication workflow is executed
+    user->>+crypto: 12. Send data to be stored with access to specific user
+    role_management->>+role_store: 21. Check user role
+    role_management->>+record_management: 22. Role authorisation success
+    alt Upon successful role access
+        Note over key_management,record_store: User record store workflow is executed
+    end
+    user->>+crypto: 12. Wrong user attempts to retrieve record
+    role_management->>+role_store: 21. Check user role
+    role_management->>+record_management: 22. Wrong user ID and permissions
+    record_management->>+user: Role authorisation failed
+    user->>+crypto: 12. Correct user attempts to retrieve record
+    role_management->>+role_store: 21. Check user role
+    role_management->>+record_management: 22. Role authorisation success
+    alt Upon successful role access
+        Note over user,record_management: User record retrieve workflow is executed
+    end
+
+    %% Key expiry workflow
+    Note over user,role_store: Key expiry workflow
+    Note over user,key_store: User authentication workflow is executed
+    key_management->>+crypto: Get user's old AES key
+    crypto->>+record_management: AES decrypt data
+    key_management->>+key_store: Generate and store new AES key
+    key_management->>+crypto: Get user's new AES key
+    crypto->>+record_management: AES encrypt data
+    Note over record_management,role_store: User record store workflow is executed

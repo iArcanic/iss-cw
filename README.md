@@ -9,7 +9,7 @@ Cryptosystem simulation for a healthcare provider service, St. John's Clinic.
 
 A Python simulation of various APIs that use cryptographic implementations to meet a healthcare provider's security requirements.
 
-> Note that this is not a simulation of the system. Rather, a simulation of independent APIs to demonstrate cryptography. It would be linked together in a real-time system.
+> NOTE: This is not a simulation of the system. Rather, a simulation of independent APIs to demonstrate cryptography. It would be linked together in a real-time system.
 
 ## Features
 
@@ -39,6 +39,7 @@ A Python simulation of various APIs that use cryptographic implementations to me
 - Storing of records based on permissions and roles
 - Retrieving of records based on permissions and roles
 - Encrypted sensitive data
+- Grant individual record access to specific users
 
 ### Workflow simulation
 
