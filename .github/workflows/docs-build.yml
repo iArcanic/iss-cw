@@ -7,7 +7,7 @@ on:
 
 jobs:
   report_build:
-    name: Report PDF Build
+    name: Report .pdf Build
     runs-on: ubuntu-latest
 
     steps:
@@ -43,19 +43,19 @@ jobs:
       id: timestamp
       run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
 
-    - name: Compile Markdown to PDF
+    - name: Compile .md to .pdf
       run: |
         timestamp=$(date +"%Y%m%d%H%M%S")
         pandoc docs/report/iss-report.md --filter pandoc-citeproc -o "iss-report-${{ steps.timestamp.outputs.timestamp }}.pdf"
 
-    - name: Upload PDF artifact
+    - name: Upload .pdf artifact
       uses: actions/upload-artifact@v2
       with:
-        name: pdf-artifact
+        name: iss-report-artifact
         path: "iss-report-${{ steps.timestamp.outputs.timestamp }}.pdf"
 
   sequence_diagram_build:
-    name: Mermaid Sequence Diagram SVG Build
+    name: Mermaid Sequence Diagram .png Build
     runs-on: ubuntu-latest
 
     steps:
@@ -70,35 +70,17 @@ jobs:
       - name: Install Mermaid
         run: npm install -g @mermaid-js/mermaid-cli
 
+      - name: Set timestamp
+        id: timestamp
+        run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
+
       - name: Convert Mermaid .mmd Diagram File To .svg
-        run: mmdc -i docs/sequence-diagram.mmd -o sequence-diagram.svg
+        run: |
+          timestamp=$(date +"%Y%m%d%H%M%S")
+          mmdc -i docs/iss-sequence-diagram.mmd -o "iss-sequence-diagram-${{ steps.timestamp.outputs.timestamp }}.png"
 
-      - name: Upload .svg artifact
+      - name: Upload .png artifact
         uses: actions/upload-artifact@v2
         with:
-          name: sequence-diagram-artifact
-          path: sequence-diagram.svg
-
-  create_artifact_zip:
-    name: Create Artifact Zip
-    runs-on: ubuntu-latest
-    needs: [ report_build, sequence_diagram_build ]
-
-    steps:
-      - name: Create artifact directory
-        run: mkdir artifact
-
-      - name: Copy PDF artifact
-        run: cp -r ${{ github.workspace }}/pdf-artifact artifact
-
-      - name: Copy SVG artifact
-        run: cp -r ${{ github.workspace }}/sequence-diagram-artifact artifact
-
-      - name: Zip artifacts
-        run: zip -r artifacts.zip artifact
-
-      - name: Upload artifact zip
-        uses: actions/upload-artifact@v2
-        with:
-          name: combined-artifacts
-          path: artifacts.zip
+          name: iss-sequence-diagram-artifact
+          path: "iss-sequence-diagram-${{ steps.timestamp.outputs.timestamp }}.png"
