@@ -121,3 +121,60 @@ export PYTHONPATH=/path/to/project:$PYTHONPATH
 ```
 
 ## Assumptions
+
+### Simulation scope
+
+- Certain aspects like physical hardware, secure deployment environments, and network infrastructure are out of scope and are assumed to be secure already.
+- Only workflows involving cryptographic protocols and access controls are focussed on.
+
+### Data
+
+- Sample data within the [`data`](https://github.com/iArcanic/iss-cw/tree/main/data) folder.
+- No real production data that is reflective of a real-time system is used.
+- Data in a real-time system may use an SQL relational database, but this simulation uses simple JSON objects.
+
+### External dependencies
+
+- HSMs (Hardware Security Module), PKIs (Public Key Infrastructure) are simulated as simple JSON objects.
+- Third party SSO (Single Sign-On) key repositories and certification authorities not simulated.
+
+### Compliance requirements
+
+- Simulation attempts to provide compliance with GDPR, CCPA, and PSD2.
+- Final compliance responsibility ultimately lies with healthcare provider
+
+### Authentication
+
+- Advance enterprise IAM (Identity Access Management) not implemented in simulation.
+- Only simple username and password based authentication suffices for simulation.
+- More advanced hardware based authentication controls, like biometric, facial, or hardware based is up to the company to consider.
+
+### Roles
+
+- Users are granted roles by an admin manually beforehand.
+- User roles assumed, like doctor, nurse, and so on based on common healthcare provider norms.
+- Only core attributes simulated - advanced RBAC left for actual enterprise integration.
+
+### Cryptographic algorithms
+
+- Basic implementation of industry standard encryption algorithms simulated to a basic level.
+- Additional platform specific encryption algorithms not implemented.
+
+### Key management
+
+- Only essential stages in the key management lifecycle able to be simulated – generation, storage, usage, and rotation.
+- Actual HSM synchronisation protocols not considered.
+
+### Exception handling
+
+- Core exception handling done but extensive error flows not implemented.
+
+### Concurrency
+
+- Only one test case workflow is run at a time.
+- Parallel processing capabilities of different workflows not considered.
+
+### Performance
+
+- Code optimisation not achieved to full capabilities.
+- Large scale data, user and cryptographic operation performance testing not done.
