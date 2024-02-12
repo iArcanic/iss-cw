@@ -121,6 +121,45 @@ Replace `/path/to/project` with the actual path to your project directory.
 export PYTHONPATH=/path/to/project:$PYTHONPATH
 ```
 
+> NOTE: Ensure that you restart your terminal console session for the environment variable to take effect.
+
+### Run the Python workflow test cases
+
+Ensure that your current directory is the [`iss-cw`](https://github.com/iArcanic/iss-cw/tree/main) project root.
+
+Navigate into the [`tests`](https://github.com/iArcanic/iss-cw/tree/main/tests) folder.
+
+```bash
+cd tests
+```
+
+List all current workflow test cases.
+
+```bash
+ls
+```
+
+To run a specific workflow test case. Replace `<name-of-python-workflow-test-case>` with the actual name of the test you want to run.
+
+```bash
+pytest -s <name-of-python-workflow-test-case>
+```
+
+To run all available workflow test cases.
+
+```bash
+pytest -s *.py
+```
+
+> NOTE: In the case of any error like so:
+> ```bash
+> E   ModuleNotFoundError: No module named 'src'
+> ```
+> Please re-run the path environment variable command from [before](#set-environment-variable):
+> ```bash
+> export PYTHONPATH=/path/to/project:$PYTHONPATH
+> ```
+
 ## Assumptions
 
 ### Simulation scope
