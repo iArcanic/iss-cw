@@ -74,13 +74,13 @@ jobs:
         id: timestamp
         run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
 
-      - name: Convert Mermaid .mmd Diagram File To .svg
+      - name: Convert Mermaid .mmd Diagram File To .pdf
         run: |
           timestamp=$(date +"%Y%m%d%H%M%S")
-          mmdc -i docs/iss-sequence-diagram.mmd -o "iss-sequence-diagram-${{ steps.timestamp.outputs.timestamp }}.png"
+          mmdc -i docs/iss-sequence-diagram.mmd -o "iss-sequence-diagram-${{ steps.timestamp.outputs.timestamp }}.pdf"
 
       - name: Upload .png artifact
         uses: actions/upload-artifact@v2
         with:
           name: iss-sequence-diagram-artifact
-          path: "iss-sequence-diagram-${{ steps.timestamp.outputs.timestamp }}.png"
+          path: "iss-sequence-diagram-${{ steps.timestamp.outputs.timestamp }}.pdf"
