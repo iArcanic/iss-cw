@@ -1,5 +1,5 @@
 sequenceDiagram
-    participant user as API client
+    actor user as API client
     participant auth as Auth system
     participant user_store as User store
     participant key_management as Key management
@@ -12,76 +12,181 @@ sequenceDiagram
 
     %% User auth workflow
     Note over user,role_store: User authentication workflow
-    user->>+auth: 1. Register
-    auth->>+user: 2. Send two factor authentication
-    auth->>+user_store: 3. Store new user credentials
-    auth->>+user: 4. Registration success
-    user->>+auth: 5. Login with credentials
-    auth->>+user_store: 6. Check credentials
-    auth->>+user: 7. Send two factor authentication
-    auth->>+user: 8. Login success
+    user->>auth: Register
+    activate user
+    activate auth
+    auth->>user: Send two factor authentication
+    auth->>user_store: Store new user credentials
+    activate user_store
+    deactivate user_store
+    auth->>user: Registration success
+    deactivate auth
+    user->>auth: Login with credentials
+    activate auth
+    auth->>user_store: Check credentials
+    activate user_store
+    deactivate user_store
+    auth->>user: Send two factor authentication
+    auth->>user: Login success
+    deactivate auth
+    user->>auth: Login
+    activate auth
     alt Upon successful login
-        key_management->>+user: 9. Generate RSA public key
-        key_management->>+key_store: 10. Generate and store RSA private key
+        key_management->>user: Generate RSA public key
+        activate user
+        deactivate user
+        key_management->>key_store: Generate and store RSA private key
+        activate key_store
+        deactivate key_store
+        activate key_management
     end
-    key_management->>+key_store: 11. Generate and store AES key
+    key_management->>key_store: Generate and store AES key
+    activate key_store
+    deactivate key_store
+    deactivate key_management
+    deactivate auth
+    deactivate user
 
     %% Record store workflow
     Note over user,role_store: User record store workflow
-    Note over user,key_store: User authentication workflow is executed
-    user->>+crypto: 12. User sends record data to store
-    key_management->>+record_management: 13. Get user's AES key
-    crypto->>+record_management: 14. AES encrypt data
-    role_management->>+role_store: 15. Check user role
-    role_management->>+record_management: 16. Role authorisation success
+    user->>record_management: User sends record data to store
+    activate user
+    activate record_management
+    key_management->>crypto: Get user's AES key
+    activate crypto
+    crypto->>record_management: AES encrypt data
+    deactivate crypto
+    activate record_management
+    deactivate record_management
+    role_management->>role_store: Check user role
+    activate role_store
+    role_management->>record_management: Role authorisation success
+    activate record_management
+    deactivate record_management
+    deactivate role_store
     alt Upon successful role access
-        crypto->>+record_management: 17. RSA encrypt data
-        key_management->>+record_management: 17. Get RSA key
-        crypto->>+record_management: 18. RSA decrypt
-        record_management->>+record_store: 19. Store record
+        key_management->>record_management: Get RSA public key
+        activate record_management
+        crypto->>record_management: RSA encrypt data
+        deactivate record_management
+        activate record_management
+        deactivate record_management
+        key_management->>record_management: Get RSA private key
+        activate record_management
+        crypto->>record_management: RSA decrypt
+        deactivate record_management
+        activate record_management
+        deactivate record_management
+        record_management->>record_store: Store record
+        activate record_store
+        record_management->>user: Record store success
+        activate user
+        deactivate user
+        deactivate record_store
+        deactivate record_management
     end
+    deactivate user
 
     %% Record retrieve workflow
     Note over user,role_store: User record retrieve workflow
-    Note over user,key_store: User authentication workflow is executed
-    user->>+record_management: 20. User retrieves record
-    role_management->>+role_store: 21. Check user role
-    role_management->>+record_management: 22. Role authorisation success
+    user->>record_management: User retrieves record
+    activate user
+    activate record_management
+    role_management->>role_store: Check user role
+    activate role_store
+    role_management->>record_management: Role authorisation success
+    activate record_management
+    deactivate record_management
+    deactivate role_store
     alt Upon successful role access
-        crypto->>+record_management: 23. RSA encrypt data
-        key_management->>+record_management: 17. Get RSA key
-        crypto->>+record_management: 24. RSA decrypt
-        key_management->>+record_management: 25. Get user's AES key
-        crypto->>+record_management: 26. AES decrypt data
-        record_management->>+user: 27. Send decrypted record
+        key_management->>record_management: Get RSA public key
+        activate record_management
+        crypto->>record_management: RSA encrypt data
+        deactivate record_management
+        activate record_management
+        deactivate record_management
+        key_management->>record_management: Get RSA private key
+        activate record_management
+        crypto->>record_management: RSA decrypt
+        deactivate record_management
+        key_management->>record_management: Get user's AES key
+        activate record_management
+        crypto->>record_management: AES decrypt data
+        activate record_management
+        deactivate record_management
+        deactivate record_management
+        record_management->>user: Record retrieve success
+        activate user
+        deactivate user
     end
+    deactivate user
+    deactivate record_management
 
     %% Individual record access workflow
     Note over user,role_store: Individual record access workflow
-    Note over user,key_store: User authentication workflow is executed
-    user->>+crypto: 12. Send data to be stored with access to specific user
-    role_management->>+role_store: 21. Check user role
-    role_management->>+record_management: 22. Role authorisation success
+    user->>record_management: Send data to be stored with access to specific user
+    activate user
+    activate record_management
+    role_management->>role_store: Check user role
+    activate role_store
+    role_management->>record_management: Role authorisation success
+    activate record_management
+    deactivate record_management
+    deactivate role_store
     alt Upon successful role access
         Note over key_management,record_store: User record store workflow is executed
     end
-    user->>+crypto: 12. Wrong user attempts to retrieve record
-    role_management->>+role_store: 21. Check user role
-    role_management->>+record_management: 22. Wrong user ID and permissions
-    record_management->>+user: Role authorisation failed
-    user->>+crypto: 12. Correct user attempts to retrieve record
-    role_management->>+role_store: 21. Check user role
-    role_management->>+record_management: 22. Role authorisation success
+    record_management->>user: Record store success
+    activate user
+    deactivate user
+    deactivate record_management
+    user->>record_management: Wrong user attempts to retrieve record
+    activate record_management
+    role_management->>role_store: Check user role
+    activate role_store
+    role_management->>record_management: Wrong user ID and permissions
+    activate record_management
+    deactivate record_management
+    deactivate role_store
+    record_management->>user: Role authorisation failed
+    activate user
+    deactivate user
+    deactivate record_management
+    user->>record_management: Correct user attempts to retrieve record
+    activate record_management
+    role_management->>role_store: Check user role
+    activate role_store
+    role_management->>record_management: Role authorisation success
+    activate record_management
+    deactivate record_management
+    deactivate role_store
     alt Upon successful role access
         Note over user,record_management: User record retrieve workflow is executed
     end
+    record_management->>user: Record retrieve success
+    activate user
+    deactivate user
+    deactivate record_management
+    deactivate user
 
     %% Key expiry workflow
+    activate user
     Note over user,role_store: Key expiry workflow
     Note over user,key_store: User authentication workflow is executed
-    key_management->>+crypto: Get user's old AES key
-    crypto->>+record_management: AES decrypt data
-    key_management->>+key_store: Generate and store new AES key
-    key_management->>+crypto: Get user's new AES key
-    crypto->>+record_management: AES encrypt data
+    key_management->>crypto: Get user's old AES key
+    activate crypto
+    crypto->>record_management: AES decrypt data
+    activate record_management
+    deactivate crypto
+    key_management->>key_store: Generate and store new AES key
+    activate key_store
+    deactivate key_store
+    deactivate record_management
+    key_management->>crypto: Get user's new AES key
+    activate crypto
+    crypto->>record_management: AES encrypt data
+    activate record_management
+    deactivate record_management
+    deactivate crypto
     Note over record_management,role_store: User record store workflow is executed
+    deactivate user

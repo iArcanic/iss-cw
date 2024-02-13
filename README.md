@@ -3,7 +3,7 @@
 ![Python Version](https://img.shields.io/badge/Python-3.x-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-Cryptosystem simulation for a healthcare provider service, St. John's Clinic.
+A cryptosystem simulation for a healthcare provider service, St. John's Clinic.
 
 ## Description
 
@@ -16,15 +16,14 @@ A Python simulation of various APIs that use cryptographic implementations to me
 ### Authentication
 
 - Authentication supporting username/password credentials
-- Simulation of third-party SSO (Single Sign-on)
-- Role Based Access Control (RBAC) with role permissions to allow need-based data access
+- Simulation of third-party SSO (Single Sign-on) login
 - Simulation of two-factor authentication (2FA) for login and registration
 
 ### Data protection
 
 - AES-256 encryption to secure sensitive data-at-rest
 - RSA encryption for secure data transmission
-- Alignment with healthcare data protection regulations
+- Role Based Access Control (RBAC) with role permissions to allow need-based data access
 
 ### Key management
 
@@ -44,7 +43,7 @@ A Python simulation of various APIs that use cryptographic implementations to me
 ### Workflow simulation
 
 - Modular design segregated into organised folders
-- Python tests for each major user journey workflow reflecting real clinical operations
+- Python tests for each major user journey workflow reflecting real-time clinical operations
 
 ## Installation
 
@@ -58,35 +57,12 @@ Ensure that your Python environment is at minimum Python 3.6 or higher.
 
 You can install a version of Python 3.x from their official website suitable for your system OS [here](https://www.python.org/downloads/).
 
-#### `git` CLI
-
-To clone this repository and the general use of GitHub version control tools and systems, the `git` CLI is required.
-
-You can install a version of `git` from their official website suitable for your system OS [here](https://git-scm.com/downloads).
-
 ### Clone this repository
 
 Clone the project repository from GitHub.
 
 ```bash
 git clone https://github.com/iArcanic/iss-cw
-```
-
-### Set up virtual Python environment [optional]
-
-Optionally, set up a virtual Python `3.x` environment to isolate project dependencies from system-wide dependencies.
-
-First install Python virtual environment.
-
-```bash
-pip3 install virtualenv
-```
-
-Create a new virtual environment. Replace `<virtual-environment-name>` with the actual name you want to give the virtual environment.
-
-```bash
-python3 -m venv <virtual-environment-name>
-source <virtual-environment-name>/bin/activate
 ```
 
 ### Install required Python libraries and packages
@@ -96,14 +72,6 @@ Navigate to the repository root folder (i.e. `iss.cw`) and install the required 
 ```bash
 pip3 install -r requirements.txt
 ```
-
-If you are optionally using a Python virtual environment, check if the packages from `requirements.txt` have been installed.
-
-```bash
-pip3 list
-```
-
-If you run the same command outside your Python virtual environment (or before it has been activated), you will see discrepancies in the install Python libraries. This not only verifies that the required packages have been installed, but helps to differentiate whether you are within your Python virtual environment.  
 
 ## Usage
 
@@ -176,7 +144,7 @@ pytest -s *.py
 ### External dependencies
 
 - HSMs (Hardware Security Module), PKIs (Public Key Infrastructure) are simulated as simple JSON objects.
-- Third party SSO (Single Sign-On) key repositories and certification authorities not simulated.
+- Third party key repositories and certification authorities not simulated.
 
 ### Compliance requirements
 
@@ -191,6 +159,7 @@ pytest -s *.py
 
 ### Roles
 
+- All JSON "databases" are stored in the healthcare provider's cloud service, MediCloud.
 - Users are granted roles by an admin manually beforehand.
 - User roles assumed, like doctor, nurse, and so on based on common healthcare provider norms.
 - Only core attributes simulated - advanced RBAC left for actual enterprise integration.
