@@ -19,7 +19,7 @@ sequenceDiagram
     auth->>user_store: Store new user credentials
     activate user_store
     deactivate user_store
-    auth->>user: Registration success
+    auth-->>user: Registration success
     deactivate auth
     user->>auth: Login with credentials
     activate auth
@@ -27,7 +27,7 @@ sequenceDiagram
     activate user_store
     deactivate user_store
     auth->>user: Send two factor authentication
-    auth->>user: Login success
+    auth-->>user: Login success
     deactivate auth
     user->>auth: Login
     activate auth
@@ -79,7 +79,7 @@ sequenceDiagram
         deactivate record_management
         record_management->>record_store: Store record
         activate record_store
-        record_management->>user: Record store success
+        record_management-->>user: Record store success
         activate user
         deactivate user
         deactivate record_store
@@ -115,7 +115,7 @@ sequenceDiagram
         activate record_management
         deactivate record_management
         deactivate record_management
-        record_management->>user: Record retrieve success
+        record_management-->>user: Record retrieve success
         activate user
         deactivate user
     end
@@ -148,7 +148,7 @@ sequenceDiagram
     activate record_management
     deactivate record_management
     deactivate role_store
-    record_management->>user: Role authorisation failed
+    record_management-->>user: Role authorisation failed
     activate user
     deactivate user
     deactivate record_management
@@ -156,14 +156,14 @@ sequenceDiagram
     activate record_management
     role_management->>role_store: Check user role
     activate role_store
-    role_management->>record_management: Role authorisation success
+    role_management-->>record_management: Role authorisation success
     activate record_management
     deactivate record_management
     deactivate role_store
     alt Upon successful role access
         Note over user,record_management: User record retrieve workflow is executed
     end
-    record_management->>user: Record retrieve success
+    record_management-->>user: Record retrieve success
     activate user
     deactivate user
     deactivate record_management
