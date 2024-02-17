@@ -1,2 +1,70 @@
 {
+  "l9ZQNK4i": {
+    "user_id": "4fd654c2-cdbc-45b4-a4a8-a72a98fa37a0",
+    "username": "l9ZQNK4i",
+    "hashed_password": "$2b$12$VKzgnjrizJbt2r9MDrVgzOYuS8X3TTLQHfi.lBmH653tCnRmTiKTO",
+    "salt": "$2b$12$VKzgnjrizJbt2r9MDrVgzO",
+    "phone_number": "0123456789"
+  },
+  "W5bsTJ35": {
+    "user_id": "6b920672-725f-40b3-b731-10c97abafc1b",
+    "username": "W5bsTJ35",
+    "hashed_password": "$2b$12$J9yaRGbuIPOQrI5DjBa8GulRWA.EyuFaGQKZbYdtfbFleQT/Ubfzu",
+    "salt": "$2b$12$J9yaRGbuIPOQrI5DjBa8Gu",
+    "phone_number": "0123456789"
+  },
+  "razaEt4z": {
+    "user_id": "fd42c268-37cf-4333-9c4a-673671ca4f7a",
+    "username": "razaEt4z",
+    "hashed_password": "$2b$12$4nsU.VzVrpsWR7/lcIMhsOVxBD2k8uyYihdUe/9sWbrAymcCiX4aK",
+    "salt": "$2b$12$4nsU.VzVrpsWR7/lcIMhsO",
+    "phone_number": "0123456789"
+  },
+  "joe_smith": {
+    "user_id": "b5b27e1a-3017-4e85-9f8d-ac9e1079957a",
+    "username": "joe_smith",
+    "third_party_status": true
+  },
+  "9C3oMfaP": {
+    "user_id": "396dd1f2-c594-4573-a455-cbe1bc8f5d18",
+    "username": "9C3oMfaP",
+    "hashed_password": "$2b$12$e.JK/fUTjb.KEf4ltnEuTe0IgNFAt8H8vgt.5k2QO2P7HmKk1z0Q6",
+    "salt": "$2b$12$e.JK/fUTjb.KEf4ltnEuTe",
+    "phone_number": "0123456789"
+  },
+  "acBJL5EV": {
+    "user_id": "4e877ca2-58bb-4f79-85b3-382dc7509075",
+    "username": "acBJL5EV",
+    "hashed_password": "$2b$12$32WmQ/jer2ex5qWZUmbaQOElcKQgnTwOiytjw2JBw6l5Jf.1bAeVu",
+    "salt": "$2b$12$32WmQ/jer2ex5qWZUmbaQO",
+    "phone_number": "0123456789"
+  },
+  "jlgHoBlV": {
+    "user_id": "5da2ecb6-55e5-468b-910b-50b6fa71a67c",
+    "username": "jlgHoBlV",
+    "hashed_password": "$2b$12$ZNb1r.2.XZE/V.HOnbGvYOa5I4h17NWRZt14FYmRUpegx2TirF/oC",
+    "salt": "$2b$12$ZNb1r.2.XZE/V.HOnbGvYO",
+    "phone_number": "0123456789"
+  },
+  "8vNb0u0d": {
+    "user_id": "c8818d42-d9d0-4520-9dcc-df296b6c4565",
+    "username": "8vNb0u0d",
+    "hashed_password": "$2b$12$ThZ.08ReSF9T5NpvAmnFPOiT9L.KXhnygF7dHH0Dc993Y5y3rUzrK",
+    "salt": "$2b$12$ThZ.08ReSF9T5NpvAmnFPO",
+    "phone_number": "0123456789"
+  },
+  "0hCWJHXH": {
+    "user_id": "b4f6e97b-51ad-465e-a443-b68600d2fd0f",
+    "username": "0hCWJHXH",
+    "hashed_password": "$2b$12$k5YoWLDXsU7zghq7zGhAm.MxfNmwW5aqwK14bMCRuv.uIFZ1dOXA6",
+    "salt": "$2b$12$k5YoWLDXsU7zghq7zGhAm.",
+    "phone_number": "0123456789"
+  },
+  "X7ehCHya": {
+    "user_id": "891423a4-c7bd-479a-82ba-07befba1a124",
+    "username": "X7ehCHya",
+    "hashed_password": "$2b$12$inbtGP8fH8fZy8SmhlaXT..Gr4YMUU1FgXiiZwMMzlZ74h76fY2PO",
+    "salt": "$2b$12$inbtGP8fH8fZy8SmhlaXT.",
+    "phone_number": "0123456789"
+  }
 }

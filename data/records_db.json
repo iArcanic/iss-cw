@@ -8,6 +8,28 @@
         "data_type": "MEDICAL_RECORD",
         "timestamp": "2024-02-10T18:53:01.343620"
       }
+    },
+    {
+      "record_id": "4ab24429-30b5-4572-83c9-9f76994d175e",
+      "owner_id": "4e877ca2-58bb-4f79-85b3-382dc7509075",
+      "data": "CG5VepgiUhxuBzWd2XWcHg9UeAgWgMRAGg1qTMWH6qbv1brXvpZBRPL4Eh/b3kZUMWeCV05EqtZLaXgd3jjA",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-12T19:00:08.054844"
+      },
+      "individual_access": []
+    },
+    {
+      "record_id": "252587e7-02b9-4b68-968f-88da7874e056",
+      "owner_id": "5da2ecb6-55e5-468b-910b-50b6fa71a67c",
+      "data": "qbZcM0ew0qxLzl7TuWRRBNNVVeg0NPwSM5kDJFFiSjE5JwGGdf0KcVMNFzWPNHEeNQIfVAHpKob9nPS9MmTQ",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-12T19:00:08.627848"
+      },
+      "individual_access": []
     }
   ]
 }

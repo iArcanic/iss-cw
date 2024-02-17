@@ -283,5 +283,65 @@
     "roles": [
       "doctor"
     ]
+  },
+  "48698731-baff-4181-8e50-a3a4ba1d877a": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "5ae18910-de65-4b05-954d-72229badac98": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "5eb783a3-5ff5-4342-b6dc-292c1455eccc": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "25a56224-d824-496b-978f-c5bf7daf3f79": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "434248b7-e440-4ace-88be-b29719bdd9c7": {
+    "roles": [
+      "research_scientist"
+    ]
+  },
+  "4dc2b968-a18f-4276-874d-964fb23da546": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "fb8c1c31-1ef9-426d-a8be-d092aad1ad29": {
+    "roles": [
+      "receptionist"
+    ]
+  },
+  "c592315e-58f8-4b03-8b04-d6f5a74b32fa": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "e1d2cec2-211a-49be-8e64-0f8d0de40f4e": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "9a0c3cd6-a693-4305-870c-6f8a6d74b604": {
+    "roles": [
+      "research_scientist"
+    ]
+  },
+  "c6e84dd3-4572-4a68-92ca-efb6cd34cd59": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "87af8021-d76b-4aeb-9c2f-80aabc8bef6c": {
+    "roles": [
+      "receptionist"
+    ]
   }
 }
