@@ -92,6 +92,50 @@ print(f"register.register_user -> User '{username}' registered successfully. Log
 
 For more detail on `register.py`, see [Appendix 5.2.2.1](#5221-registerpy).
 
+### 2.2.2 User login
+
+The user, with their newly created account via the `register()` function, can now use that to login into the system and access the relevant data. The only credentials that they require for this is their `username` and `password` as such. These are passed as parameters to the function.
+
+```python
+def login_user(username, password)
+```
+
+Based on the given parameters to the function, `login()` then checks if the username exists, and if not, appropriately terminates the program flow.
+
+```python
+if username not in users_data:
+    print("login.login_user -> Username not found. Please register first.")
+    return
+```
+
+Using the username and the JSON document, it attempts to get all of the user's data. This data is then used for further processing.
+
+```python
+user_data = users_data[username]
+stored_password_hash = user_data['hashed_password']
+salt = user_data['salt']
+phone_number = user_data.get('phone_number', None)
+```
+
+Since the function is hashed, the `bcrypt` Python library's `.checkpw` function compares the bytes of the entered user's password against the stored hash in the JSON database. Only then will the post processing actions take place if the function returns true based on the hash.
+
+```python
+if bcrypt.checkpw(entered_password.encode('utf-8'), stored_password_hash.encode('utf-8'))
+```
+
+Since two factor authentication was proposed for a secure authentication framework, a simulation of sending the one time password code is "sent" to the user's mobile device. If the verification passes, then the an RSA key under the user's ID is generated and stored (see []()) in the RSA HSM (Hardware Security Module). The `user_id` and `public_key` public key object is returned from the function for any post login actions.
+
+```python
+two_factor_code = generate_2fa_code()
+send_2fa_code(phone_number, two_factor_code)
+entered_code = input("Enter the 2FA code: ")
+
+if entered_code == two_factor_code:
+    print("login.login_user -> Login successful.")
+    public_key = refresh_rsa_key(user_data["user_id"])
+    return user_data['user_id'], public_key
+```
+
 ## 2.2 Key management
 
 ## 2.3 Data transmission
@@ -181,7 +225,7 @@ def register_user(username, password, phone_number):
           f"continue.")
 ```
 
-#### `login.py`
+#### 5.2.2.2 `login.py`
 
 ```python
 import bcrypt
