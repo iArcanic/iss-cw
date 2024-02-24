@@ -4,7 +4,7 @@ author: "2242090"
 bibliography: docs/report/references.bib
 toc: true
 toc-title: Table of Contents
-toc-depth: 3
+toc-depth: 4
 geometry: "left=1.25cm, right=1.25cm, top=1.25cm, bottom=1.25cm"
 csl: docs/report/harvard-imperial-college-london.csl
 ---
@@ -89,7 +89,7 @@ users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on `register.py`, see [Appendix 5.3.1.1](#5311-registerpy).
+For more detail on the full code implementation see [Appendix 5.3.1.1](#5311-registerpy).
 
 ### 2.1.2 User login
 
@@ -122,7 +122,7 @@ Since the function is hashed, the `bcrypt` Python library's `.checkpw` function 
 if bcrypt.checkpw(entered_password.encode('utf-8'), stored_password_hash.encode('utf-8'))
 ```
 
-Since two factor authentication was proposed for a secure authentication framework, a simulation of sending the one time password code is "sent" to the user's mobile device. If the verification passes, then the an RSA key under the user's ID is generated and stored (see []()) in the RSA HSM (Hardware Security Module). The `user_id` and `public_key` public key object is returned from the function for any post login actions.
+Since two factor authentication was proposed for a secure authentication framework, a simulation of sending the one time password code is "sent" to the user's mobile device. If the verification passes, then the an RSA key under the user's ID is generated and stored (see [2.2.1](#221-key-generation) and [2.2.2](#222-key-storage)) in the RSA HSM (Hardware Security Module). The `user_id` and `public_key` public key object is returned from the function for any post login actions.
 
 ```python
 two_factor_code = generate_2fa_code()
@@ -135,7 +135,7 @@ if entered_code == two_factor_code:
     return user_data['user_id'], public_key
 ```
 
-For more detail on `login.py`, see [Appendix 5.3.1.2](#5312-loginpy).
+For more detail on the full code implementation, see [Appendix 5.3.1.2](#5312-loginpy).
 
 ### 2.1.3 Single Sign-on (SSO)
 
@@ -173,9 +173,50 @@ users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on `sso.py`, see [Appendix 5.3.1.3](#5313-ssopy).
+For more detail on the full code implementation, see [Appendix 5.3.1.3](#5313-ssopy).
 
 ## 2.2 Key management
+
+For the chosen encryption algorithms, cryptographic keys serve need to have a well-defined key lifecycle, ensuring the security and integrity of these keys at every stage. Each phase of the lifecycle prevents unauthorised access, data collection or loss, with the aim of maintaining the confidentiality and integrity of these keys.
+
+Since two different encryption algorithms, i.e. RSA and AES, are used, the key lifecycle stages are explained for each where applicable and implemented, but may have different characteristics.
+
+### 2.2.1 Key generation
+
+#### 2.2.2.1 AES
+
+For AES, the key generation process is very simple. Using the Python built-in OS library, the `urandom` function generates a random binary string of 32 bytes (i.e. 256 bits). Since this uses random logic, it is safe to say that this is cryptographically secure.
+
+```python
+def generate_aes_key():
+    key = os.urandom(32)
+    return key
+```
+
+For more detail on the full code implementation see [Appendix 5.3.2.1.1](#53211-key_genpy).
+
+#### 2.2.2.2 RSA
+
+For RSA, there is a dedicated library for all RSA encryption functions. Using the `rsa.generate_private_key` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` specifies the public exponent value used in the RSA algorithm. The value of `65537` is the default for most RSA keys. `key_size`, as the name suggests, is the size of the key in bits, so a value of `2048` is a standard size providing a adequate balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library to perform the generation process. A `public_key` can also be derived from the generated private key.
+
+```python
+def generate_key_pair():
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend()
+    )
+    public_key = private_key.public_key()
+    return private_key, public_key
+```
+
+For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
+
+### 2.2.2 Key storage
+
+### 2.2.3 Key retrieval
+
+### 2.2.4 Key expiry rotation
 
 ## 2.3 Data transmission
 
@@ -201,6 +242,7 @@ For more detail on `sso.py`, see [Appendix 5.3.1.3](#5313-ssopy).
 ## 5.2 GitHub repository
 
 Link to GitHub repository, containing full code and installation documentation.
+
 [iss-cw3 GitHub repository](https://github.com/iArcanic/iss-cw)
 
 ## 5.3 Implementation source code
@@ -373,11 +415,158 @@ def single_sign_on(username):
         data_store(USER_DB, users_data)
 
         # Third party identity provider would do their own authentication logic here
-        print("sso.single_sign_on -> Third party authentication successful\nAuthentication logic by the third party "
-              "provider.")
+        print("sso.single_sign_on -> Third party authentication successful "
+                "Authentication logic by the third party provider.")
     else:
         # Terminate on unsuccessful SSO login
         print("sso.single_sign_on -> Third party authentication failed. SSO login aborted.")
+```
+
+### 5.3.2 Key management
+
+#### 5.3.2.1 AES key functions
+
+##### 5.3.2.1.1 `key_gen.py`
+
+```python
+import os
+
+
+def generate_aes_key():
+    key = os.urandom(32)
+    return key
+```
+
+#### 5.3.2.2 `rsa_key_manager.py`
+
+```python
+import json
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+
+
+def replace_or_insert_key_from_file(user_id, new_key, file_path="data/rsa_hsm.json"):
+    try:
+        with open(file_path, 'r') as file:
+            json_data = json.load(file)
+    except FileNotFoundError:
+        json_data = {"rsa_keys": []}
+
+    for entry in json_data["rsa_keys"]:
+        # Get the correct user entry
+        if entry["user_id"] == user_id:
+            # Store the new RSA key in JSON object in RSA HSM
+            entry["key"] = new_key
+            break
+    else:
+        # If user_id not found, insert a new entry
+        json_data["rsa_keys"].append({"user_id": user_id, "key": new_key})
+
+    # Write to RSA HSM
+    with open(file_path, 'w') as file:
+        json.dump(json_data, file, indent=2)
+
+
+# Convert private key bytes into PEM format to be stored in JSON
+def pem_convert_private_key(key):
+    # Get RSA private key bytes
+    pem_format = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    # Convert bytes into string
+    return pem_format.decode('utf-8')
+
+
+# Convert public key bytes into PEM format to be stored in JSON
+def pem_convert_public_key(key):
+    # Get RSA public key bytes
+    pem_format = key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    # Convert bytes into string
+    return pem_format.decode('utf-8')
+
+
+# Refresh RSA public and private keys when the user logins in PEM format
+def refresh_rsa_key(user_id):
+    # Generate new RSA key pair
+    private_key, public_key = generate_key_pair()
+
+    # Convert RSA private key into PEM format
+    private_key_pem = pem_convert_private_key(private_key)
+
+    # Store new RSA private key into RSA HSM under the given user_id
+    replace_or_insert_key_from_file(user_id, private_key_pem)
+
+    return pem_convert_public_key(public_key)
+
+
+# Generate an RSA public and private key pair
+def generate_key_pair():
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend()
+    )
+    public_key = private_key.public_key()
+    return private_key, public_key
+
+
+# Encrypt with RSA public key
+def rsa_encrypt(data, public_key_pem):
+    public_key = load_public_key_from_pem_string(public_key_pem)
+    ciphertext = public_key.encrypt(
+        # Data as hex
+        data.encode(),
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return ciphertext
+
+
+def rsa_decrypt(ciphertext, private_key_pem):
+    private_key = load_private_key_from_pem_string(private_key_pem)
+    plaintext = private_key.decrypt(
+        ciphertext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    # Convert from bytes to string
+    return plaintext.decode("utf-8")
+
+
+# Convert RSA private key from string to key object
+def load_private_key_from_pem_string(pem_string):
+    private_key = serialization.load_pem_private_key(
+        # Convert to bytes
+        pem_string.encode(),
+        password=None,
+        backend=default_backend()
+    )
+    return private_key
+
+
+# Convert RSA public key from string to key object
+def load_public_key_from_pem_string(pem_string):
+    public_key = serialization.load_pem_public_key(
+        # Convert to bytes
+        pem_string.encode(),
+        backend=default_backend()
+    )
+    return public_key
 ```
 
 # 6 References
