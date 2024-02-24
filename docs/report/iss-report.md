@@ -89,7 +89,7 @@ users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on `register.py`, see [Appendix 5.2.1.1](#5211-registerpy).
+For more detail on `register.py`, see [Appendix 5.3.1.1](#5311-registerpy).
 
 ### 2.1.2 User login
 
@@ -135,7 +135,7 @@ if entered_code == two_factor_code:
     return user_data['user_id'], public_key
 ```
 
-For more detail on `login.py`, see [Appendix 5.2.1.2](#5212-loginpy).
+For more detail on `login.py`, see [Appendix 5.3.1.2](#5312-loginpy).
 
 ### 2.1.3 Single Sign-on (SSO)
 
@@ -149,8 +149,8 @@ The program flow is terminated if the username isn't found in the user database 
 
 ```python
 if username not in third_party_data:
-    raise ValueError(f"sso.single_sign_on -> Username {username} not found.
-        Please register with the third party provider first.")
+    raise ValueError(f"sso.single_sign_on -> Username {username} not found. "
+                    f"Please register with the third party provider first.")
 ```
 
 The program flow continues if the above is not the case, and using the data content from the JSON file, it then makes a new user entry. The important here is to note that this JSON object has less fields than the regular authentication framework – this is the third party company's responsibility to implement and provide their own identity authentication or any other relevant user details. The important additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login).
@@ -172,6 +172,8 @@ Finally, this entry is written to the healthcare provider's normal user database
 users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
+
+For more detail on `sso.py`, see [Appendix 5.3.1.3](#5313-ssopy).
 
 ## 2.2 Key management
 
@@ -196,11 +198,16 @@ data_store(USER_DB, users_data)
 ![Sequence diagram pt. 1](images/sequence-diagram-1.png)
 ![Sequence diagram pt. 2](images/sequence-diagram-2.png)
 
-## 5.2 Implementation source code
+## 5.2 GitHub repository
 
-### 5.2.1 Authentication
+Link to GitHub repository, containing full code and installation documentation.
+[iss-cw3 GitHub repository](https://github.com/iArcanic/iss-cw)
 
-#### 5.2.1.1 `register.py`
+## 5.3 Implementation source code
+
+### 5.3.1 Authentication
+
+#### 5.3.1.1 `register.py`
 
 ```python
 import uuid
@@ -267,7 +274,7 @@ def register_user(username, password, phone_number):
           f"Login with your new account to continue.")
 ```
 
-#### 5.2.1.2 `login.py`
+#### 5.3.1.2 `login.py`
 
 ```python
 import bcrypt
@@ -321,6 +328,56 @@ def login_user(username, password):
             print("login.login_user -> 2FA verification failed. Login aborted.")
     else:
         print("login.login_user -> Incorrect password. Login aborted.")
+```
+
+### 5.3.1.3 `sso.py`
+
+```python
+import uuid
+
+from src.data_manager import *
+
+# Third party provider database simulation
+THIRD_PARTY_DB = "data/third_party_db.json"
+
+# User database simulation
+USER_DB = "data/user_db.json"
+
+
+def single_sign_on(username):
+    # Read all user entries from the third party provider database
+    third_party_data = data_read(THIRD_PARTY_DB)
+
+    # Read all user entries from the Users database
+    users_data = data_read_return_empty_if_not_found(USER_DB)
+
+    if username not in third_party_data:
+        raise ValueError(f"sso.single_sign_on -> Username {username} not found. "
+                        f"Please register with the third party provider first.")
+
+    # Get the correct user entry
+    third_party_data = third_party_data[username]
+
+    if third_party_data:
+        # Make a new entry
+        new_user = {
+            'user_id': str(uuid.uuid4()),
+            'username': username,
+            'third_party_status': True
+        }
+
+        # Make a new entry in the Users database
+        users_data[username] = new_user
+
+        # Add the new SSO user to the database
+        data_store(USER_DB, users_data)
+
+        # Third party identity provider would do their own authentication logic here
+        print("sso.single_sign_on -> Third party authentication successful\nAuthentication logic by the third party "
+              "provider.")
+    else:
+        # Terminate on unsuccessful SSO login
+        print("sso.single_sign_on -> Third party authentication failed. SSO login aborted.")
 ```
 
 # 6 References
