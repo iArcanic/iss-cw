@@ -21,7 +21,7 @@ A current analysis of the cybersecurity practices which St. John's Clinic need t
 - Cryptographic encryption algorithms
 - Secure data transmission
 
-# 2 Proposed simulation
+# 2 System description
 
 For reference, please see [Appendix 5.1](#51-sequence-diagram) for the sequence diagram.
 
@@ -29,7 +29,7 @@ For reference, please see [Appendix 5.1](#51-sequence-diagram) for the sequence 
 
 A robust authentication framework means that only authorised users are allowed to interact with the system. It therefore regulates access to protected sensitive data and clinic services which should otherwise be inaccessible to unauthorised entities.
 
-### 2.2.1 User registration
+### 2.1.1 User registration
 
 Under the assumption that any new users need to be registered securely with the system, a register function has been takes this into consideration. Since this is a simulation, the patient details this function processes are not that substantial to the overall functionality of the system, so only the following have been taken into account:
 
@@ -90,9 +90,9 @@ data_store(USER_DB, users_data)
 print(f"register.register_user -> User '{username}' registered successfully. Login with your new account to continue.")
 ```
 
-For more detail on `register.py`, see [Appendix 5.2.2.1](#5221-registerpy).
+For more detail on `register.py`, see [Appendix 5.2.1.1](#5211-registerpy).
 
-### 2.2.2 User login
+### 2.1.2 User login
 
 The user, with their newly created account via the `register()` function, can now use that to login into the system and access the relevant data. The only credentials that they require for this is their `username` and `password` as such. These are passed as parameters to the function.
 
@@ -136,6 +136,43 @@ if entered_code == two_factor_code:
     return user_data['user_id'], public_key
 ```
 
+For more detail on `login.py`, see [Appendix 5.2.1.2](#5212-loginpy).
+
+### 2.1.3 Single Sign-on (SSO)
+
+For SSO, since homegrown SSO within the organisation was implemented, i.e, authentication with username and password, this SSO accounts for external authentication. Since this is the case, the below function os a simulation of this – only requiring a `username`. The backend identity management will be the responsibility of the third party company performing the authentication and returning the result of it.
+
+```python
+def single_sign_on(username)
+```
+
+The program flow is terminated if the username isn't found in the user database of the third party company.
+
+```python
+if username not in third_party_data:
+    raise ValueError(f"sso.single_sign_on -> Username {username} not found. Please register with the third party provider first.")
+```
+
+The program flow continues if the above is not the case, and using the data content from the JSON file, it then makes a new user entry. The important here is to note that this JSON object has less fields than the regular authentication framework – this is the third party company's responsibility to implement and provide their own identity authentication or any other relevant user details. The important additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login).
+
+```python
+third_party_data = third_party_data[username]
+
+if third_party_data:
+    new_user = {
+        'user_id': str(uuid.uuid4()),
+        'username': username,
+        'third_party_status': True
+    }
+```
+
+Finally, this entry is written to the healthcare provider's normal user database.
+
+```python
+users_data[username] = new_user
+data_store(USER_DB, users_data)
+```
+
 ## 2.2 Key management
 
 ## 2.3 Data transmission
@@ -144,9 +181,9 @@ if entered_code == two_factor_code:
 
 ## 2.5 Workflow simulation
 
-# 3 Assumptions
+# 3 Compliance and standards
 
-# 4 Compliance and standards
+# 4 Assumptions taken
 
 # 5 Appendices
 
@@ -159,7 +196,7 @@ if entered_code == two_factor_code:
 
 ### 5.2.1 Authentication
 
-#### 5.2.2.1 `register.py`
+#### 5.2.1.1 `register.py`
 
 ```python
 import uuid
@@ -225,7 +262,7 @@ def register_user(username, password, phone_number):
           f"continue.")
 ```
 
-#### 5.2.2.2 `login.py`
+#### 5.2.1.2 `login.py`
 
 ```python
 import bcrypt

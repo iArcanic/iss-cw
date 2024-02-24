@@ -403,6 +403,94 @@
       "individual_access": [
         "c6e84dd3-4572-4a68-92ca-efb6cd34cd59"
       ]
+    },
+    {
+      "record_id": "2f0e67e6-344f-4d3b-b14d-c7a698eb8dac",
+      "owner_id": "e04732ac-a438-4b46-b57c-2e69bf65cded",
+      "data": "LgcHGUbQa0ybLh/35mvz77rifnUBKwKj2sWOdMLMNJklXvji/vx8kvfM0Jui1J0c1fMS1WPX0qTtl6wztAJC",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-19T22:40:21.229497"
+      },
+      "individual_access": []
+    },
+    {
+      "record_id": "5b8ce507-ea89-4d52-be95-2bca2332b761",
+      "owner_id": "2f6e8453-dcbd-4ec2-aefc-be9af3afe647",
+      "data": "LlEzAEgWNw79PZL9ffX5KPWm27aE9Y8zrFDBtbsCGyVcpIQx3RwT9421zwXPXubjSNYnmo7mzj7TVJi5ZQZy",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-19T22:40:21.767669"
+      },
+      "individual_access": []
+    },
+    {
+      "record_id": "17895c82-c7ac-436c-9676-6cfa46939225",
+      "owner_id": "f259c797-c82e-46c7-9357-e1884d5b517e",
+      "data": "2IUEEFRjmm0HAzDY216vaqeanWMskg5t/XSTiKRqn6t4vk/t2BaTdRAdsAvrz/A4zEXGmsyw2wdU5UIVk91489Q2Pb8jYrsNlErAQqtrQhAoFPJ/EgolNX6/gy8=",
+      "meta_data": {
+        "data_type": "RESEARCH_RECORD",
+        "timestamp": "2024-02-19T22:40:22.816276"
+      },
+      "individual_access": []
+    },
+    {
+      "record_id": "f0c2c70e-e4af-429a-9b50-640f13c13e26",
+      "owner_id": "f259c797-c82e-46c7-9357-e1884d5b517e",
+      "data": "/aj6GmE+JiGER1Lm6CwbJrUu+ZT+eQRlCA6E0OBoMhGDJ3Tcq30Ipvf4BucGZFkoMM7rkOribtDuj3ewhPMcInHsKqx6RFdDbxjhtb8LWgg3fzVFP7uNqZoOyVg=",
+      "meta_data": {
+        "data_type": "RESEARCH_RECORD",
+        "timestamp": "2024-02-19T22:40:22.860207"
+      },
+      "individual_access": [
+        "e96f1684-47cd-4887-8e69-ac4e782d943c"
+      ]
+    },
+    {
+      "record_id": "4f9db4d3-d2f6-4efb-a1dd-9b90932979a4",
+      "owner_id": "4519fd50-c257-4f95-8309-ca7312a97480",
+      "data": "txdRJjz+H1ErtIY5i/GoDa8K8nxAXDViWV3n5x8cnR9Jgo0/Rl8bW9sNjW/CagfJw4zYJXrN7qFHZ/FUehT2",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-19T22:42:35.228008"
+      },
+      "individual_access": []
+    },
+    {
+      "record_id": "68b83fce-b73d-4ef1-b251-9357ec196ff3",
+      "owner_id": "f9171c49-00c2-44c3-96ba-57e38b38058a",
+      "data": "WPpyQkkGqHiJDzdDs/ALl2pMo5uPslUtgjz/rmjwuO4dO1UMDBDUOR0LjFLAFdQxRPbzSPujpeQnk9YNDj2zdoJ3fXjHpiwWY/YLWX1CgoOmsPcohwTLIh7Qzno=",
+      "meta_data": {
+        "data_type": "RESEARCH_RECORD",
+        "timestamp": "2024-02-19T22:45:31.858206"
+      },
+      "individual_access": []
+    },
+    {
+      "record_id": "e15103bf-9b02-497a-954d-cfd87dcb8439",
+      "owner_id": "f9171c49-00c2-44c3-96ba-57e38b38058a",
+      "data": "ylpBP9pMU4nQQFXjog8LF4Bmn9iVUvpAI002yZkY7CTqZLqnW3jOQQy95u0rK6mVwKiOs6sFqBYqGgMAuyYgMdwZV6iGxBal58JsKMx1MUma2FGp8nim1jZ0ZIg=",
+      "meta_data": {
+        "data_type": "RESEARCH_RECORD",
+        "timestamp": "2024-02-19T22:45:31.902635"
+      },
+      "individual_access": [
+        "dd020b11-8948-40c9-9c29-30a84d4b09dc"
+      ]
+    },
+    {
+      "record_id": "5543e651-c062-40a2-99c3-2fe501cc7b9f",
+      "owner_id": "b15cd015-b13c-4186-b9cc-307e2deafa65",
+      "data": "aV5wDoYeRk8cvCCKjIqahKwpB6fmIL9n0uPNjFbh1DYPk1E6uFdFk8Q7D8vPm2HV11/NQPp8WsVikKqAOHSU",
+      "meta_data": {
+        "patient_id": "0da97ef6-3af0-423f-884c-40cf23184a50",
+        "data_type": "MEDICAL_RECORD",
+        "timestamp": "2024-02-19T22:48:18.580646"
+      },
+      "individual_access": []
     }
   ]
 }

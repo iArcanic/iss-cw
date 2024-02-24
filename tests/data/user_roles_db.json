@@ -343,5 +343,55 @@
     "roles": [
       "receptionist"
     ]
+  },
+  "e04732ac-a438-4b46-b57c-2e69bf65cded": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "2f6e8453-dcbd-4ec2-aefc-be9af3afe647": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "f259c797-c82e-46c7-9357-e1884d5b517e": {
+    "roles": [
+      "research_scientist"
+    ]
+  },
+  "e96f1684-47cd-4887-8e69-ac4e782d943c": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "4ba358e9-9f79-4ad2-9567-41ca7219af80": {
+    "roles": [
+      "receptionist"
+    ]
+  },
+  "4519fd50-c257-4f95-8309-ca7312a97480": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "8ffb4137-6608-4166-a972-f1167746f178": {
+    "roles": [
+      "receptionist"
+    ]
+  },
+  "f9171c49-00c2-44c3-96ba-57e38b38058a": {
+    "roles": [
+      "research_scientist"
+    ]
+  },
+  "dd020b11-8948-40c9-9c29-30a84d4b09dc": {
+    "roles": [
+      "doctor"
+    ]
+  },
+  "b15cd015-b13c-4186-b9cc-307e2deafa65": {
+    "roles": [
+      "doctor"
+    ]
   }
 }
