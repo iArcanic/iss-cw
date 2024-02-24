@@ -4,7 +4,7 @@ author: "2242090"
 bibliography: docs/report/references.bib
 toc: true
 toc-title: Table of Contents
-toc-depth: 4
+toc-depth: 5
 geometry: "left=1.25cm, right=1.25cm, top=1.25cm, bottom=1.25cm"
 csl: docs/report/harvard-imperial-college-london.csl
 ---
@@ -183,7 +183,7 @@ Since two different encryption algorithms, i.e. RSA and AES, are used, the key l
 
 ### 2.2.1 Key generation
 
-#### 2.2.2.1 AES
+#### 2.2.1.1 AES
 
 For AES, the key generation process is very simple. Using the Python built-in OS library, the `urandom` function generates a random binary string of 32 bytes (i.e. 256 bits). Since this uses random logic, it is safe to say that this is cryptographically secure.
 
@@ -195,7 +195,7 @@ def generate_aes_key():
 
 For more detail on the full code implementation see [Appendix 5.3.2.1.1](#53211-key_genpy).
 
-#### 2.2.2.2 RSA
+#### 2.2.1.2 RSA
 
 For RSA, there is a dedicated library for all RSA encryption functions. Using the `rsa.generate_private_key` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` specifies the public exponent value used in the RSA algorithm. The value of `65537` is the default for most RSA keys. `key_size`, as the name suggests, is the size of the key in bits, so a value of `2048` is a standard size providing a adequate balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library to perform the generation process. A `public_key` can also be derived from the generated private key.
 
@@ -213,6 +213,79 @@ def generate_key_pair():
 For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
 
 ### 2.2.2 Key storage
+
+#### 2.2.2.1 AES
+
+To store the AES symmetric key, it needs to be stored under the corresponding user. This ensures a unique key for each user and can be accessed system-wide by the multiple clinic services, so that it can be consistent.
+
+```python
+def store_aes_key(user_id, key)
+```
+
+Using a simple `try` `catch` block, a file open is attempted in order to capture all the existing keys from the file. In the case that the file is not found, then it defaults the `json_data` variable to an empty JSON collection.
+
+```python
+try:
+    with open(HSM_DB, 'r') as file:
+        json_data = json.load(file)
+except FileNotFoundError:
+    json_data = {"aes_keys": []}
+```
+
+By iterating through the `aes_keys` JSON collection, if the `user_id` passed in parameter matches the `for` loop's index, it makes an entry for the key, but as a hex object using `.hex()`. This is because the key is passed in as raw bytes, and cannot be stored in the JSON file unless serialised. If not however, then a new entry is made in the `aes_keys` JSON collection, adding in the `user_id` and the `key` as a hex.
+
+```python
+for entry in json_data["aes_keys"]:
+    if entry["user_id"] == user_id:
+        entry["key"] = key.hex()
+        break
+    else:
+        json_data["aes_keys"].append({"user_id": user_id, "key": key.hex()})
+```
+
+The function then writes the data to the appropriate key store file, which in this case is the `HSM_DB`.
+
+```python
+with open(HSM_DB, 'w') as file:
+    json.dump(json_data, file, indent=2)
+```
+
+For more detail on the full code implementation see [5.3.2.1.2](#53212-key_storepy).
+
+#### 2.2.2.2 RSA
+
+The function that takes care of storing the RSA keys is the same to the AES key store function. This function below, `replace_or_insert_key_from_file()` takes in the `user_id` of the user which the key is stored under, `new_key` being the new RSA generated key from the previous `generate_key_pair()` function, and the `file_path` to the RSA key store.
+
+```python
+def replace_or_insert_key_from_file(user_id, new_key, file_path="data/rsa_hsm.json")
+```
+
+Following on from that, the logic of the function is exactly similar to the AES key store function so no further explanation is needed. One difference is the name in the JSON collection, from `aes_keys` to `rsa_keys` obviously.
+
+However, one thing to note, is that since the `generate_key_pair()` function returns a the RSA public and private keys in a usable format, i.e. in bytes, it cannot be stored into JSON unless serialised. But in this instance, the RSA keys do not have a callable `.hex()` function so the Python RSA cryptographic library has its own specialised serialised function for this. Instead of bytes, it is converted into a PEM string format. The two functions below take this into account and perform the conversion.
+
+Firstly for the RSA private key, using the `.private_bytes()` function, it takes a couple of arguments. The `encoding` parameter explicitly states that a PEM encoder should be used for a PEM output. The `format` parameter specifies the format for the private key, which in this case is `PKCS8` which is the widely used standard. Finally the `encryption_algorithm` parameter states that there should be no encryption applied to the RSA private key when converted to PEM since the assumption of the HSM (a simulated one) is used (see []() for further detail). At the end, it decodes the `pem_format` variable from bytes to string to be able to be stored in the JSON file.
+
+```python
+def pem_convert_private_key(key):
+    pem_format = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    return pem_format.decode('utf-8')
+```
+
+The same applies when converting the RSA public key to a PEM format, but this time using the `.private_bytes()` method. The `encoding` parameter in this case remains the same, since a PEM output is required. The `format` parameter however, since this is a public key, is different to the previous value, since this time the standard format suitable for public keys is used. And again, it performs the bytes to string conversion for JSON serialisation.
+
+```python
+def pem_convert_public_key(key):
+    pem_format = key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    return pem_format.decode('utf-8')
+```
 
 ### 2.2.3 Key retrieval
 
@@ -435,6 +508,45 @@ import os
 def generate_aes_key():
     key = os.urandom(32)
     return key
+```
+
+##### 5.3.2.1.2 `key_store.py`
+
+```python
+import base64
+
+from src.decryption import aes_data_decrypt
+from src.encryption import aes_encrypt
+from src.key_management.key_gen import generate_aes_key
+from src.key_management.key_retrieve import *
+
+# Hardware Security Module (HSM) for AES keys simulation
+HSM_DB = "data/hsm.json"
+
+# Records database simulation
+RECORDS_DB = "data/records_db.json"
+
+
+def store_aes_key(user_id, key):
+    try:
+        with open(HSM_DB, 'r') as file:
+            # Read all key entries from HSM
+            json_data = json.load(file)
+    except FileNotFoundError:
+        # If file is not found then make an empty aes_keys JSON collection
+        json_data = {"aes_keys": []}
+
+    for entry in json_data["aes_keys"]:
+        if entry["user_id"] == user_id:
+            # Store AES key as hex in database
+            entry["key"] = key.hex()
+            break
+        else:
+            # If user_id not found, insert a new entry using the given AES key
+            json_data["aes_keys"].append({"user_id": user_id, "key": key.hex()})
+
+    with open(HSM_DB, 'w') as file:
+        json.dump(json_data, file, indent=2)
 ```
 
 #### 5.3.2.2 `rsa_key_manager.py`
