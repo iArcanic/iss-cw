@@ -45,7 +45,8 @@ To ensure that the username is unique, it reads the contents of the `USER_DB` JS
 users_data = data_read_return_empty_if_not_found(USER_DB)
 
 if username in users_data:
-    print(f"register.register_user -> Username '{username}' already exists. Please choose a different username.")
+    print(f"register.register_user -> Username '{username}' already exists. "
+        f"Please choose a different username.")
     return
 ```
 
@@ -86,8 +87,6 @@ new_user = {
 
 users_data[username] = new_user
 data_store(USER_DB, users_data)
-
-print(f"register.register_user -> User '{username}' registered successfully. Login with your new account to continue.")
 ```
 
 For more detail on `register.py`, see [Appendix 5.2.1.1](#5211-registerpy).
@@ -150,7 +149,8 @@ The program flow is terminated if the username isn't found in the user database 
 
 ```python
 if username not in third_party_data:
-    raise ValueError(f"sso.single_sign_on -> Username {username} not found. Please register with the third party provider first.")
+    raise ValueError(f"sso.single_sign_on -> Username {username} not found.
+        Please register with the third party provider first.")
 ```
 
 The program flow continues if the above is not the case, and using the data content from the JSON file, it then makes a new user entry. The important here is to note that this JSON object has less fields than the regular authentication framework – this is the third party company's responsibility to implement and provide their own identity authentication or any other relevant user details. The important additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login).
@@ -181,7 +181,11 @@ data_store(USER_DB, users_data)
 
 ## 2.5 Workflow simulation
 
-# 3 Compliance and standards
+# 3 Addressing requirements
+
+## 3.1 Cryptographic algorithms and protocols
+
+## 3.2 Compliance and standards
 
 # 4 Assumptions taken
 
@@ -189,8 +193,8 @@ data_store(USER_DB, users_data)
 
 ## 5.1 Sequence diagram
 
-![](images/sequence-diagram-1.png)
-![](images/sequence-diagram-2.png)
+![Sequence diagram pt. 1](images/sequence-diagram-1.png)
+![Sequence diagram pt. 2](images/sequence-diagram-2.png)
 
 ## 5.2 Implementation source code
 
@@ -215,7 +219,8 @@ def register_user(username, password, phone_number):
 
     # Check if the username already exists in the database
     if username in users_data:
-        print(f"register.register_user -> Username '{username}' already exists. Please choose a different username.")
+        print(f"register.register_user -> Username '{username}' already exists. "
+            f"Please choose a different username.")
         return
 
     # Generate a 2FA code
@@ -258,8 +263,8 @@ def register_user(username, password, phone_number):
     # Save the updated database to the file
     data_store(USER_DB, users_data)
 
-    print(f"register.register_user -> User '{username}' registered successfully. Login with your new account to "
-          f"continue.")
+    print(f"register.register_user -> User '{username}' registered successfully. "
+          f"Login with your new account to continue.")
 ```
 
 #### 5.2.1.2 `login.py`
