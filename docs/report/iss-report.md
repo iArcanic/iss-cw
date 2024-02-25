@@ -439,7 +439,7 @@ To actually create the cipher text, the newly created `encryptor` will take the 
 ciphertext = encryptor.update(data) + encryptor.finalize()
 ```
 
-The final, true form of the cipher text is returned, as a concatenation of the initialisation vector and the newly generated cipher text.
+The final, true form of the cipher text is returned, as a concatenation of the initialisation vector and the newly generated cipher text. This will be required in the decryption process (see [2.3.2](#232-decryption)).
 
 ```python
 return iv + ciphertext
@@ -448,6 +448,58 @@ return iv + ciphertext
 For more detail on the full code implementation, see [5.3.3.1](#5331-encryptionpy).
 
 ### 2.3.2 Decryption
+
+Since AES symmetric encryption was used, the relevant decryption operation has to be performed to convert the cipher text output to its original readable plain text input. This function again, takes the same arguments as `aes_encrypt`.
+
+```python
+def aes_data_decrypt(aes_key, data)
+```
+
+As the `data` parameter will take the value of serialised cipher text from the JSON object, it needs to be unserialised in the same way, and that is again by decoding via Base64. This ensures that the cipher text is in its original form.
+
+```python
+ciphertext = base64.b64decode(data)
+```
+
+Since in `aes_encrypt` the final cipher text was a combination of the initialisation vector and the cipher text components (see [2.3.1](#231-encryption)), using string splicing, the cipher text is appropriately split up in half, of length 16 characters – the size of the initialisation vector and the actual cipher text are both 16 (see [2.3.1](#231-encryption)), so in total, 32 characters.
+
+```python
+iv = ciphertext[:16]
+actual_ciphertext = ciphertext[16:]
+```
+
+Again, as explained in [2.3.1](#231-encryption), the `aes_key` is checked to see if it is of the correct length to ensure that malformed data does not traverse the system.
+
+```python
+if len(aes_key) != 32:
+    raise ValueError("AES key must be 32 bytes long for AES-256")
+```
+
+Like before in [2.3.1](#231-encryption), a cipher object must be formed again using the exact same parameters and values.
+
+```python
+cipher = Cipher(algorithms.AES(aes_key), modes.CFB(iv), backend=default_backend())
+```
+
+This time however, a `decryptor` is made since the required operation is decryption. This via the `.decryptor()` method of the cipher object.
+
+```python
+decryptor = cipher.decryptor()
+```
+
+Using this `decryptor` and the decryption configuration from the `cipher` variable, the decryption process is performed in the exact same way as the encryption process, but with the `actual_ciphertext` spliced component of the passed in cipher text.
+
+```python
+decrypted_data = decryptor.update(actual_ciphertext) + decryptor.finalize()
+```
+
+Finally, as the `decryptor` returns the plain text in bytes, using `decode()`, it converts this back into a string, so that it can be read.
+
+```python
+return decrypted_data.decode()
+```
+
+For more detail on the full code implementation, see [5.3.3.2](#5332-decryptionpy).
 
 ### 2.3.3 Role Based Access Control (RBAC)
 
@@ -952,6 +1004,42 @@ def aes_encrypt(key, data):
 
     # Concatenate the IV and ciphertext to form the final ciphertext
     return iv + ciphertext
+```
+
+#### 5.3.3.2 `decryption.py`
+
+```python
+import base64
+
+from src.encryption import *
+
+
+# AES data decryption operation
+def aes_data_decrypt(aes_key, data):
+    # Base64 decode the encrypted data
+    ciphertext = base64.b64decode(data)
+    print(f"record_store.record_store -> Encrypted data at rest {ciphertext}")
+
+    # Splice the initialisation vector from the cipher text
+    iv = ciphertext[:16]
+
+    # Splice the actual encrypted data content from the ciphertext
+    actual_ciphertext = ciphertext[16:]
+
+    # Check whether the AES key is of the required length
+    if len(aes_key) != 32:
+        raise ValueError("AES key must be 32 bytes long for AES-256")
+
+    # Create a new AES cipher using the AES key and IV
+    cipher = Cipher(algorithms.AES(aes_key), modes.CFB(iv), backend=default_backend())
+
+    # Make a new decrypter with that cipher to decrypt the data
+    decryptor = cipher.decryptor()
+    decrypted_data = decryptor.update(actual_ciphertext) + decryptor.finalize()
+
+    # Decode the plaintext to string from bytes
+    plaintext = decrypted_data
+    return plaintext.decode()
 ```
 
 ### 5.3.4 Data transmission
