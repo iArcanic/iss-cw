@@ -564,8 +564,8 @@ if role in role_permissions_data:
         return func(owner_id, *args, **kwargs)
     else:
         raise PermissionError(
-                            f"role_check.role_check_decorator -> User with ID {owner_id} does not have required "
-                            f"permissions for this operation.")
+                            f"role_check.role_check_decorator -> User with ID {owner_id} "
+                            f"does not have required permissions for this operation.")
 ```
 
 Finally, once all the logic has been performed, then the `wrapper` function needs to be returned as this allows the logic within the `wrapper` function to be executed if any function is decorated with it.
@@ -627,7 +627,47 @@ For more detail on the full code implementation, see [5.3.3.4](#5334-record_stor
 
 ### 2.3.5 Retrieve records
 
+To simulate data being read across the multiple clinic's services, the counterpart function of `record_store` is implemented. Again, like with `record_store`, this function is annotated with the wrapper `role_check_decorator` since the RBAC has to be called to check user permissions if this operation is attempted. A record is retrieved based on the `owner_id`, the `patient_id` present within the `metadata` field of the record's JSON object, as well as the user's permission that the `role_check_decorator` uses.
+
+```python
+@role_check_decorator
+def record_retrieve(owner_id, patient_id, permission)
+```
+
+An empty list is initialised at the start of the function, which will be an array of all the found records. At the end of the function, this will be returned to the user.
+
+```python
+records_list = []
+```
+
+The correct `aes_key` of the user (or record owner) is required for decryption purposes, using `retrieve_key()`.
+
+```python
+aes_key = retrieve_key(owner_id)
+```
+
+Iterating through the records database, the corresponding record needs to be found, based on the `owner_id` and `patient_id` fields of the record JSON object – if they match with the values of the given arguments.
+
+```python
+for record in records_data["records"]:
+    if record["owner_id"] == owner_id and record["meta_data"]["patient_id"] == patient_id:
+```
+
+Using the `data` field of the record JSON object, the decryption process is performed using `aes_decrypt`, with the user's AES key and the encrypted cipher text. This is then appended to the `records_list` mentioned earlier in this section and returned to the user.
+
+```python
+# ...previous code
+    record["data"] = aes_data_decrypt(aes_key, record["data"])
+    records_list.append(record)
+
+return records_list
+```
+
+For more detail on the full code implementation, see [5.3.3.5](#5335-record_retrievepy).
+
 #### 2.3.5.1 Individual access record retrieval
+
+For more detail on the full code implementation, see [5.3.3.5](#5335-record_retrievepy).
 
 ## 2.4 Data transmission
 
@@ -1206,8 +1246,8 @@ def role_check_decorator(func):
                     else:
                         # Terminate the program if the user does not have the relevant role
                         raise PermissionError(
-                            f"role_check.role_check_decorator -> User with ID {owner_id} does not have required "
-                            f"permissions for this operation.")
+                            f"role_check.role_check_decorator -> User with ID {owner_id} "
+                            f"does not have required permissions for this operation.")
                 else:
                     # Terminate the program if the role is not found
                     print(f"role_check.role_check_decorator -> Role {role} not found in role permissions data.")
@@ -1344,8 +1384,8 @@ def record_retrieve_by_id(record_id, user_id):
     else:
         # Raise error if the wrong user tried to access the record
         raise PermissionError(
-            f"record_retrieve.record_retrieve_by_id -> User with ID {user_id} does not have required permissions for "
-            f"this operation."
+            f"record_retrieve.record_retrieve_by_id -> User with ID {user_id} "
+            f"does not have required permissions for this operation."
         )
 ```
 
