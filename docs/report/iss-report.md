@@ -1,6 +1,6 @@
 ---
 title: "ISS-CW3 Report"
-author: "2242090"
+author: "Preetham Ananthkumar 2242090"
 bibliography: docs/report/references.bib
 toc: true
 toc-title: Table of Contents
@@ -287,7 +287,70 @@ def pem_convert_public_key(key):
     return pem_format.decode('utf-8')
 ```
 
+For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
+
 ### 2.2.3 Key retrieval
+
+#### 2.2.3.1 AES
+
+The stored AES keys need to be retrieved for any symmetric encryption processes for the relevant user. This allows for the same key to be used across all the various clinic systems.
+
+As mentioned, this function will accept a `user_id` parameter to return the key for the given user.
+
+```python
+def retrieve_key(user_id)
+```
+
+For this, a simple file read takes place, iterating through the JSON file via a `for` loop. `key_entries` uses a `data_read` utility function to capture all the data from the JSON file (or simulated HSM, see []() for more information). By looping through, it checks for the matching `user_id` and then returns the key in a usable format, i.e. converting it from the stored hex into its original bytes form.
+
+```python
+key_entries = data_read(HSM_DB)
+
+for entry in key_entries["aes_keys"]:
+    if entry["user_id"] == user_id:
+        return bytes.fromhex(entry["key"])
+```
+
+For more detail on the full code implementation see [5.3.2.1.3](#53213-key_retrievepy).
+
+#### 2.2.3.2 RSA
+
+Although there is no explicit function in the `rsa_manager.py` file for key retrieval, wherever required, a simple JSON file read was sufficient enough to obtain the key.
+
+For example, in an RSA decryption function implemented later on (see [2.3](#23-data-transmission)), a simple `for` loop iterating through the JSON file was enough. This same logic is implemented seperately as a function for the AES `retrieve_key()` module (see [2.2.3.1](#2231-aes)).
+
+```python
+for key_info in rsa_hsm_data["rsa_keys"]:
+    if key_info["user_id"] == owner_id:
+        private_key_pem = key_info["key"]
+```
+
+What was the main problem was the conversion between the PEM string into a usable RSA key format from the JSON serialisation. The following two function address this.
+
+Below, this function takes in the RSA private key's `pem_string` as a parameter and utilises the cryptographic library's `.load_pem_private_key()` method to load the private key object. The `pem_string` is converted into bytes via `.encode()` since the function expects data in binary form, allowing any non-textual characters or special formatting within the PEM data are preserved accurately. `password` being set to `None` means that there is no password protection applied, which is consistent with the fact that no encryption algorithm was applied in the PEM conversion. As before in [2.2.1.2](#2212-rsa), the `backend` uses the library's default.
+
+```python
+def load_private_key_from_pem_string(pem_string):
+    private_key = serialization.load_pem_private_key(
+        pem_string.encode(),
+        password=None,
+        backend=default_backend()
+    )
+    return private_key
+```
+
+The counterpart function, for the RSA public key, is more or less the same. Key differences being the method, `.load_pem_public_key()`, and the omittance of the `password` parameter.
+
+```python
+def load_public_key_from_pem_string(pem_string):
+    public_key = serialization.load_pem_public_key(
+        pem_string.encode(),
+        backend=default_backend()
+    )
+    return public_key
+```
+
+For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
 
 ### 2.2.4 Key expiry rotation
 
@@ -547,6 +610,29 @@ def store_aes_key(user_id, key):
 
     with open(HSM_DB, 'w') as file:
         json.dump(json_data, file, indent=2)
+```
+
+##### 5.3.2.1.3 `key_retrieve.py`
+
+```python
+from src.data_manager import *
+
+# Hardware Security Module (HSM) for AES keys simulation
+HSM_DB = "data/hsm.json"
+
+
+def retrieve_key(user_id):
+    # Read all key entries from HSM
+    key_entries = data_read(HSM_DB)
+
+    for entry in key_entries["aes_keys"]:
+        # Get the correct record
+        if entry["user_id"] == user_id:
+            # Return AES key from hex into a usable format
+            return bytes.fromhex(entry["key"])
+
+    print(f"key_retrieve.retrieve_key -> Key for user {user_id} not found in {HSM_DB}!")
+    return None
 ```
 
 #### 5.3.2.2 `rsa_key_manager.py`
