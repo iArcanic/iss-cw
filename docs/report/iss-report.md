@@ -354,9 +354,61 @@ For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_mana
 
 ### 2.2.4 Key expiry rotation
 
-## 2.3 Data transmission
+#### 2.2.4.1 AES
 
-## 2.4 Record management
+The AES keys stored in the HSM need to be rotated and expired periodically in order to be cryptographically secure. In the event the HSM is breached and access to the AES key is gained, since the key has been rotated, the data still cannot be decrypted regardless.
+
+This function needs to know the correct `user_id` in order to find the AES key of the user to expire.
+
+```python
+def expire_aes_key(user_id)
+```
+
+By using the previous `retrieve_key()` function in [2.2.3.1](#2231-aes), it gets the user's current AES key, and labels in a variable called `old_aes_key`, since the key will expire soon. Now using the `generate_aes_key()` function from [2.2.1.1](#2211-aes), a new AES key is generated that will replace the previous one.
+
+```python
+old_aes_key = retrieve_key(user_id)
+new_aes_key = generate_aes_key()
+```
+
+By looping through a JSON file containing data used by the various clinical systems, i.e. records (see [2.3](#23-record-management)), the `if` statement helps to determine the right record based on the `user_id`. By getting the data from the `data` field of the JSON object, the old AES key is used to decrypt and replace the contents of the field with its original plaintext form using the `aes_data_decrypt` function (see [2.3.2](#232-decryption)).
+
+```python
+for record in records_data["records"]:
+    if record["owner_id"] == user_id:
+        record["data"] = aes_data_decrypt(old_aes_key, record["data"])
+```
+
+Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Using Python's `base64` library and the relevant method, `b64encode()`, it encodes the cipher text into Base64 binary data. The `.decode()` function will turn this into a string from bytes. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
+
+```python
+for record in records_data["records"]:
+    if record["owner_id"] == user_id:
+        # ...previous code
+        ciphertext = aes_encrypt(new_aes_key, record["data"].encode())
+        serialized_ciphertext = base64.b64encode(ciphertext).decode()
+        record["data"] = serialized_ciphertext
+```
+
+For more detail on the full code implementation, see [5.3.2.1.4](#53214-key_expirepy).
+
+#### 2.2.4.2 RSA
+
+For RSA, there is no explicit key expiry implemented. This is because each time the user logins, both their RSA public and private keys are dynamically refreshed and re-generated (see [2.1.2](#212-user-login)).
+
+## 2.3 Record management
+
+### 2.3.1 Encryption
+
+### 2.3.2 Decryption
+
+### 2.3.3 Role Based Access Control (RBAC)
+
+## 2.4 Data transmission
+
+### 2.4.1 Encryption
+
+### 2.4.2 Decryption
 
 ## 2.5 Workflow simulation
 
@@ -633,6 +685,59 @@ def retrieve_key(user_id):
 
     print(f"key_retrieve.retrieve_key -> Key for user {user_id} not found in {HSM_DB}!")
     return None
+```
+
+##### 5.3.2.1.4 `key_expire.py`
+
+> NOTE: The `expire_aes_key` function is implemented within the `key_store.py` (see [5.3.2.1.2](#53212-key_storepy)) rather than in its own separate file. For clarity and understanding purposes, it has been presented in here as its own distinct file.
+
+```python
+import base64
+
+from src.decryption import aes_data_decrypt
+from src.encryption import aes_encrypt
+from src.key_management.key_gen import generate_aes_key
+from src.key_management.key_retrieve import *
+
+# Hardware Security Module (HSM) for AES keys simulation
+HSM_DB = "data/hsm.json"
+
+# Records database simulation
+RECORDS_DB = "data/records_db.json"
+
+# This has to be highly transactional.
+# For any failures, old key should be rolled back, including data encryption and decryption
+def expire_aes_key(user_id):
+
+    # Read all record entries from Records database
+    records_data = data_read(RECORDS_DB)
+
+    # Get AES old key
+    old_aes_key = retrieve_key(user_id)
+
+    # Make a new AES key
+    new_aes_key = generate_aes_key()
+
+    # Store new key under the given user_id
+    store_aes_key(user_id, new_aes_key)
+
+    for record in records_data["records"]:
+        # Get the correct record
+        if record["owner_id"] == user_id:
+            # Decrypt the data of that record with the old AES key
+            record["data"] = aes_data_decrypt(old_aes_key, record["data"])
+
+            # Encrypt the data of that record with the new key
+            ciphertext = aes_encrypt(new_aes_key, record["data"].encode())
+
+            # Serialise the ciphertext so it can be stored as JSON
+            serialized_ciphertext = base64.b64encode(ciphertext).decode()
+
+            # Overwrite the data of that record with the new serialised ciphertext
+            record["data"] = serialized_ciphertext
+
+    # Write to Records database
+    data_store(RECORDS_DB, records_data)
 ```
 
 #### 5.3.2.2 `rsa_key_manager.py`
