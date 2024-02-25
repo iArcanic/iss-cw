@@ -585,7 +585,49 @@ For more detail on the full code implementation, see [5.3.3.3](#5333-role_checkp
 
 ### 2.3.4 Store records
 
+To simulate users being able to interact with the various clinic's services and systems, being able to write and/or edit data is an important operation to implement. The function below is annotated with the `role_check_decorator` (see [2.3.3](#233-role-based-access-control-rbac)), so the user's role is checked each time they attempt to execute this function. `owner_id` is the ID of the user writing the record (the record owner), `data` being the actual data to be stored, `metadata` is any additional data passed in as a dictionary, `permission` which is the user's permission, `decrypted_data` for the data received from the RSA data transmission (see [2.4](#24-data-transmission)), and finally `individual_access` if the user wants the record to be retrieved by specific users only (see [2.5.1](#2351-individual-access-record-retrieval)) – default to `None` (equivalent to `null`), since the user may not want to do this at all.
+
+```python
+@role_check_decorator
+def record_store(owner_id, data, meta_data, permission, decrypted_data, individual_access=None):
+```
+
+First, the AES key assigned to the user is retrieved, by passing in the `owner_id` as the parameter for the `aes_encrypt` method. `json_data` is the JSON file dump of the decrypted data from the RSA data transmission (see [2.4](#24-data-transmission)). `ciphertext` obviously being the encrypted form of the plaintext, with the `json_data` converted into bytes first via `.encode()`. The cipher text, as mentioned previously, has to be serialised into a specific Base64 format, i.e. to a Base64 string to be suitable for JSON storage.
+
+```python
+key = retrieve_key(owner_id)
+json_data = json.dumps(decrypted_data, indent=2)
+ciphertext = aes_encrypt(key, json_data.encode())
+serialized_ciphertext = base64.b64encode(ciphertext).decode()
+```
+
+All the components of the JSON object are brought together via a dictionary mapping. Using the `uuid` Python library, just like for user registration (see [2.1.1](#211-user-registration)), a random unique GUID is generated. This JSON object will be stored in the `"records"` JSON collection.
+
+```python
+record_id = str(uuid.uuid4())
+
+json_data["records"].append(
+    {
+        "record_id": record_id,
+        "owner_id": owner_id,
+        "data": serialized_ciphertext,
+        "meta_data": meta_data,
+        "individual_access": individual_access
+    })
+```
+
+After the data has been encrypted and modified for JSON, it is then written to the correct file (a records database). The `record_id` is returned for reading records (see [2.3.5](#235-retrieve-records)) in the future.
+
+```python
+json.dump(json_data, file, indent=2)
+return record_id
+```
+
+For more detail on the full code implementation, see [5.3.3.4](#5334-record_storepy).
+
 ### 2.3.5 Retrieve records
+
+#### 2.3.5.1 Individual access record retrieval
 
 ## 2.4 Data transmission
 
@@ -1174,6 +1216,137 @@ def role_check_decorator(func):
             print(f"role_check.role_check_decorator -> User with ID {owner_id} not found in user roles data.")
 
     return wrapper
+```
+
+#### 5.3.3.4 `record_store.py`
+
+```python
+import base64
+import uuid
+
+from src.decrypt_data import *
+from src.encryption import *
+from src.key_management.key_retrieve import retrieve_key
+from src.role_check import *
+
+# Records database simulation
+RECORDS_DB = "data/records_db.json"
+
+
+# Decorators executed each time function is run
+@rsa_decrypt_data_decorator
+@role_check_decorator
+# Store a record based on record owner_id, data, meta-data, permission of user performing this operation,
+# decrypted data from RSA data transmission, and individual access rights
+def record_store(owner_id, data, meta_data, permission, decrypted_data, individual_access=None):
+    # If individual_access parameter is not passed when function is called
+    if individual_access is None:
+        # Create empty collection to be stored in the JSON object
+        individual_access = []
+    print(f"record_store.record_store -> Data received encrypted: {data}")
+
+    # Get AES key record owner
+    key = retrieve_key(owner_id)
+
+    # Decrypt data from data transmission
+    json_data = json.dumps(decrypted_data, indent=2)
+
+    # Encrypt the JSON-formatted data at rest
+    ciphertext = aes_encrypt(key, json_data.encode())
+
+    # Convert the ciphertext to a JSON-serializable format (Base64-encoded string)
+    serialized_ciphertext = base64.b64encode(ciphertext).decode()
+
+    try:
+        with open(RECORDS_DB, 'r') as file:
+            # Read all record entries from Records database
+            json_data = json.load(file)
+    except FileNotFoundError:
+        # If file is not found then make an empty records JSON collection
+        json_data = {"records": []}
+
+    try:
+        with open(RECORDS_DB, 'w') as file:
+
+            # Make UUID dynamically for each new record
+            record_id = str(uuid.uuid4())
+
+            # Add to records JSON collection
+            json_data["records"].append(
+                {"record_id": record_id, "owner_id": owner_id, "data": serialized_ciphertext,
+                 "meta_data": meta_data, "individual_access": individual_access})
+
+            # Write to the Records database
+            json.dump(json_data, file, indent=2)
+
+            return record_id
+
+    except FileNotFoundError:
+        print(f"record_store.record_store -> {RECORDS_DB} not found.")
+```
+
+#### 5.3.3.5 `record_retrieve.py`
+
+```python
+from src.decryption import aes_data_decrypt
+from src.key_management.key_retrieve import *
+from src.role_check import *
+
+# Records database simulation
+RECORDS_DB = "data/records_db.json"
+
+
+# Decorator executed each time function is run
+@role_check_decorator
+# Get all records based on record owner_id, patient_id, and the permission of user performing this operation
+def record_retrieve(owner_id, patient_id, permission):
+    # List to capture all found records
+    records_list = []
+
+    # Get all record entries
+    records_data = data_read(RECORDS_DB)
+
+    # Get relevant AES key based on record owner_id
+    aes_key = retrieve_key(owner_id)
+
+    for record in records_data["records"]:
+        # Get the correct record based on the record owner_id and patient_id
+        if record["owner_id"] == owner_id and record["meta_data"]["patient_id"] == patient_id:
+
+            # Use AES key to perform AES decryption on data
+            # Overwrite encrypted data with the decrypted plaintext
+            record["data"] = aes_data_decrypt(aes_key, record["data"])
+
+            # Add all found and modified records to list
+            records_list.append(record)
+
+    return records_list
+
+
+# Retrieve record by record_id
+def record_retrieve_by_id(record_id, user_id):
+    # Get all record entries
+    records_data = data_read(RECORDS_DB)
+
+    # Filter records by record_id
+    record = list(filter(lambda x: x["record_id"] == record_id, records_data["records"]))[0]
+
+    # Get record that has individual access for given user_id
+    if user_id in record["individual_access"]:
+        # Get record owner's AES key
+        aes_key = retrieve_key(record["owner_id"])
+
+        # Use AES key to perform AES decryption on data
+        # Overwrite encrypted data with the decrypted plaintext
+        record["data"] = aes_data_decrypt(aes_key, record["data"])
+
+        return record
+    else:
+        # Raise error if the wrong user tried to access the record
+        raise PermissionError(
+            f"record_retrieve.record_retrieve_by_id -> User with ID {user_id} does not have required permissions for "
+            f"this operation."
+        )
 ```
 
 ### 5.3.4 Data transmission
