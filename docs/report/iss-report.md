@@ -9,6 +9,8 @@ geometry: "left=1.25cm, right=1.25cm, top=1.25cm, bottom=1.25cm"
 csl: docs/report/harvard-imperial-college-london.csl
 ---
 
+---
+
 # 1 Introduction
 
 This report provides a comprehensive narrative description of the proposed cryptographic simulation for the healthcare provider, St. John's Clinic. The design has been implemented in such a way that it addresses the key security gaps within the clinic's data protection requirements, in order to align with compliance standards, and provide robust safeguarding mechanisms to secure sensitive data, that is, patient personal information, medical prescriptions, financial transactions, research data, and so on.
@@ -382,12 +384,12 @@ for record in records_data["records"]:
 Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Using Python's `base64` library and the relevant method, `b64encode()`, it encodes the cipher text into Base64 binary data. The `.decode()` function will turn this into a string from bytes. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
 
 ```python
-for record in records_data["records"]:
-    if record["owner_id"] == user_id:
-        # ...previous code
-        ciphertext = aes_encrypt(new_aes_key, record["data"].encode())
-        serialized_ciphertext = base64.b64encode(ciphertext).decode()
-        record["data"] = serialized_ciphertext
+if record["owner_id"] == user_id:
+    # ...previous code
+
+    ciphertext = aes_encrypt(new_aes_key, record["data"].encode())
+    serialized_ciphertext = base64.b64encode(ciphertext).decode()
+    record["data"] = serialized_ciphertext
 ```
 
 For more detail on the full code implementation, see [5.3.2.1.4](#53214-key_expirepy).
@@ -503,6 +505,84 @@ For more detail on the full code implementation, see [5.3.3.2](#5332-decryptionp
 
 ### 2.3.3 Role Based Access Control (RBAC)
 
+The Role Based Access Control (RBAC), is a method of access control where users are granted certain privileges or access to specific system properties based on the permissions they have. Access decisions are solely dependent on the user's permissions rather than the actual identity of the users themselves. This approach allows for easier access management since permissions can be quickly assigned or revoked by administrators.
+
+The RBAC for this simulation has been implemented as a Python wrapper function or decorator. For instance, if there was a decorator called `function_x` and a normal function called `function_y`, if `function_x` is wrapped around `function_y`, each time `function_y` is called and executed `function_x` will also be called and executed (either before or after, depending on how it is wrapped). This allows for additional functionality and flexibility. The decisioning for this implementation is that the RBAC needs to be called each time a user attempts to perform a record operation (see [2.3.4](#234-store-records) and [2.3.5](#235-retrieve-records)) – they are only able to do so if they have the necessary permissions.
+
+A wrapper function is defined like so. The `role_check_decorator` takes in a `func` parameter, meaning it takes in another whole function as a parameter. The inner `wrapper` function either modifies or extends the behavior of the function is is called upon, taking in `owner_id` (owner of the record, see [2.3.4](#234-store-records)), `*args` and `**kwargs` to accept any number of extra positional arguments.
+
+```python
+def role_check_decorator(func):
+    def wrapper(owner_id, *args, **kwargs):
+```
+
+This `try` `catch` block attempts to open and capture data of the necessary JSON files, those being `USER_ROLES_DB` (a database containing the user IDs and any associated roles) and `ROLE_PERMISSIONS_DB` (a database containing information on all available system roles). If there is an error with this operation, then terminate the program.
+
+```python
+try:
+    with open(USER_ROLES_DB, 'r') as user_roles_file:
+        user_roles_data = json.load(user_roles_file)
+
+    with open(ROLE_PERMISSIONS_DB, 'r') as role_permissions_file:
+        role_permissions_data = json.load(role_permissions_file)
+
+except FileNotFoundError:
+    print(f"role_check.role_check_decorator -> {USER_ROLES_DB} database or {ROLE_PERMISSIONS_DB} database not "
+            f"found.")
+    return
+```
+
+To start the role access logic, first, the owner of the record or rather, whichever user is attempting to perform a record operation should be first checked to see if they exist and have roles allocated to them. If this is the case, then store all the available user roles into a variable.
+
+```python
+if owner_id in user_roles_data:
+    user_roles = user_roles_data[owner_id]["roles"]
+else:
+    print(f"role_check.role_check_decorator -> User with ID {owner_id} not found in user roles data.")
+```
+
+By looping through the user roles database, first check if role actually exists within the database. If so, then from the function that the decorator function is wrapped around, gets the `permission` parameter with `kwargs.get()`. As the permissions in the role permissions database are stored in capital letters, the `.upper()` ensures that it is in the same case regardless of the parameter value.
+
+```python
+if owner_id in user_roles_data:
+    # ...previous code
+
+    for role in user_roles:
+        if role in role_permissions_data:
+            permission_name = kwargs.get("permission", "").upper()
+        else:
+            print(f"role_check.role_check_decorator -> Role {role} not found in role permissions data.")
+```
+
+The function then checks whether the claimed permission passed to the original function is indeed within the permissions of that specific role. If so then control is passed back to the original function and the program flow resumes as normal – the user does have the necessary role. However, if this isn't the case, then a special `PermissionError` can be raised, terminating the execution – the user does not have the necessary roles.
+
+```python
+if role in role_permissions_data:
+    # ...previous code
+
+    if permission_name in role_permissions_data[role]["permissions"]:
+        return func(owner_id, *args, **kwargs)
+    else:
+        raise PermissionError(
+                            f"role_check.role_check_decorator -> User with ID {owner_id} does not have required "
+                            f"permissions for this operation.")
+```
+
+Finally, once all the logic has been performed, then the `wrapper` function needs to be returned as this allows the logic within the `wrapper` function to be executed if any function is decorated with it.
+
+```python
+return wrapper
+```
+
+To call this wrapper function upon other functions, the syntax is like so.
+
+```python
+@role_check_decorator
+def record_store(...)
+```
+
+For more detail on the full code implementation, see [5.3.3.3](#5333-role_checkpy).
+
 ### 2.3.4 Store records
 
 ### 2.3.5 Retrieve records
@@ -512,8 +592,6 @@ For more detail on the full code implementation, see [5.3.3.2](#5332-decryptionp
 ### 2.4.1 Encryption
 
 ### 2.4.2 Decryption
-
-## 2.5 Workflow simulation
 
 # 3 Addressing requirements
 
@@ -1040,6 +1118,62 @@ def aes_data_decrypt(aes_key, data):
     # Decode the plaintext to string from bytes
     plaintext = decrypted_data
     return plaintext.decode()
+```
+
+#### 5.3.3.3 `role_check.py`
+
+```python
+import json
+
+# User roles database simulation
+USER_ROLES_DB = "data/user_roles_db.json"
+
+# Role permissions database simulation
+ROLE_PERMISSIONS_DB = "data/role_permissions_db.json"
+
+
+def role_check_decorator(func):
+    def wrapper(owner_id, *args, **kwargs):
+        try:
+            with open(USER_ROLES_DB, 'r') as user_roles_file:
+                # Get all the users with their relevant allocated roles
+                user_roles_data = json.load(user_roles_file)
+
+            with open(ROLE_PERMISSIONS_DB, 'r') as role_permissions_file:
+                # Get all permissions
+                role_permissions_data = json.load(role_permissions_file)
+
+        except FileNotFoundError:
+            print(f"role_check.role_check_decorator -> {USER_ROLES_DB} database or {ROLE_PERMISSIONS_DB} database not "
+                  f"found.")
+            return
+
+        if owner_id in user_roles_data:
+            # Get all the roles which the user has been granted
+            user_roles = user_roles_data[owner_id]["roles"]
+
+            for role in user_roles:
+                # Check if the role exists
+                if role in role_permissions_data:
+                    # Check if the function's name corresponds to a permission
+                    permission_name = kwargs.get("permission", "").upper()
+                    # Get the correct permission from permissions database
+                    if permission_name in role_permissions_data[role]["permissions"]:
+                        # Return to the original function
+                        return func(owner_id, *args, **kwargs)
+                    else:
+                        # Terminate the program if the user does not have the relevant role
+                        raise PermissionError(
+                            f"role_check.role_check_decorator -> User with ID {owner_id} does not have required "
+                            f"permissions for this operation.")
+                else:
+                    # Terminate the program if the role is not found
+                    print(f"role_check.role_check_decorator -> Role {role} not found in role permissions data.")
+        else:
+            # Terminate the program if the user is not found
+            print(f"role_check.role_check_decorator -> User with ID {owner_id} not found in user roles data.")
+
+    return wrapper
 ```
 
 ### 5.3.4 Data transmission
