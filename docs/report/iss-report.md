@@ -707,9 +707,94 @@ For more detail on the full code implementation, see [5.3.3.5](#5335-record_retr
 
 ## 2.4 Data transmission
 
+Data needs to be stored and read across the various systems in the clinic. During the transmission, this data needs to remain secure and unreadable, so even if an unauthorised third party either attempts to access or has access to the data, it is presented to them in an unreadable format. The algorithm of choice for this is RSA asymmetric key encryption.
+
 ### 2.4.1 Encryption
 
+The function below implements RSA encryption, using Python's RSA cryptographic library. It takes in the `data` to take to output as cipher text and the PEM string of the user's RSA public key that they have been assigned with.
+
+```python
+def rsa_encrypt(data, public_key_pem)
+```
+
+Since the public key is passed in as a PEM format, the previous `load_public_key_from_pem_string()` function (see [2.2.3.2](#2232-rsa)) takes the PEM string and converts into a usable RSA public key object.
+
+```python
+public_key = load_public_key_from_pem_string(public_key_pem)
+```
+
+By using the `.encrypt()` method of the `public_key` object, the `data` can be RSA encrypted. First, the plaintext data is converted into bytes via `.encode()`, since this is the format the function accepts. With `padding.OAEP`, a padding scheme needs to be specified, where `mgf=padding.MGF1(algorithm=hashes.SHA256())` is the Mask Generation Function used, in this case with the SHA256 algorithm. The `label` parameter can be used for any additional labels to be included within the padding, but this is not required here, so it has been set to `None` (or `null`).
+
+```python
+ciphertext = public_key.encrypt(
+        data.encode(),
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return ciphertext
+```
+
+For more detail on the full code implementation, see [5.3.2.2](#5322-rsa_key_managerpy).
+
 ### 2.4.2 Decryption
+
+As implemented in `role_check_decorator`, the RSA decryption process has also been implemented as a wrapper.
+
+Firstly, starting with the `rsa_decrypt` function, this is essentially the same but the opposite counter part to the encryption process. This time however, it uses the user's private key that they have been assigned with as well as the `.decrypt()` method of the `private_key`. At the end however, the `plaintext` is recoded back to string in `utf-8`.
+
+```python
+def rsa_decrypt(ciphertext, private_key_pem):
+    private_key = load_private_key_from_pem_string(private_key_pem)
+    plaintext = private_key.decrypt(
+        ciphertext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return plaintext.decode("utf-8")
+```
+
+Similar to the `role_check_decorator`, this wrapper function takes in a function as a parameter. The inner function additionally accepts the record owner's ID as well as the `data`, which is the cipher text in this case.
+
+```python
+def rsa_decrypt_data_decorator(func):
+    def wrapper(owner_id, data, *args, **kwargs):
+```
+
+All the data from the RSA key JSON database (or RSA HSM) is looped through to find the correct record based on the `user_id`. From this record, the PEM format of the RSA private key is obtained.
+
+```python
+rsa_hsm_data = data_read("data/rsa_hsm.json")
+    for key_info in rsa_hsm_data["rsa_keys"]:
+        if key_info["user_id"] == owner_id:
+            private_key_pem = key_info["key"]
+```
+
+Using the previously mentioned `rsa_decrypt()` function, it decrypts the transmission data by passing in the cipher text (through `data`) and the PEM of the RSA private key, which gets converted into a usable key object.
+
+```python
+decrypted_data = rsa_decrypt(data, private_key_pem)
+```
+
+At the end, the original function's arguments are returned back, by passing the new values that the parameters take. The parameters with `kwargs.get(...)` means that the parameters take the value of the decorated function's values. The other parameters without this take on new modified variables from the wrapper.
+
+```python
+return func(
+    owner_id=owner_id,
+    data=data,
+    meta_data=kwargs.get("meta_data"),
+    permission=kwargs.get("permission"),
+    decrypted_data=decrypted_data,
+    individual_access=kwargs.get("individual_access")
+)
+```
+
+For more detail on the full code implementation, see [5.3.4.1](#5341-decrypt_datapy).
 
 # 3 Addressing requirements
 
@@ -1426,5 +1511,41 @@ def record_retrieve_by_id(record_id, user_id):
 ```
 
 ### 5.3.4 Data transmission
+
+#### 5.3.4.1 `decrypt_data.py`
+
+```python
+from src.data_manager import *
+from src.key_management.rsa_key_manager import *
+
+
+# Decorator function RSA decrypt data
+def rsa_decrypt_data_decorator(func):
+    def wrapper(owner_id, data, *args, **kwargs):
+
+        # Get all RSA private key entries from RSA HSM
+        rsa_hsm_data = data_read("data/rsa_hsm.json")
+
+        for key_info in rsa_hsm_data["rsa_keys"]:
+            # Get correct RSA private key entry for record owner
+            if key_info["user_id"] == owner_id:
+                # Get RSA private key PEM string
+                private_key_pem = key_info["key"]
+
+                # Use RSA private key PEM string to perform RSA decryption on data
+                decrypted_data = rsa_decrypt(data, private_key_pem)
+
+                # Return to the original function''s arguments
+                return func(
+                    owner_id=owner_id,
+                    data=data,
+                    meta_data=kwargs.get("meta_data"),
+                    permission=kwargs.get("permission"),
+                    decrypted_data=decrypted_data,
+                    individual_access=kwargs.get("individual_access")
+                )
+
+    return wrapper
+```
 
 # 6 References
