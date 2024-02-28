@@ -796,9 +796,21 @@ return func(
 
 For more detail on the full code implementation, see [5.3.4.1](#5341-decrypt_datapy).
 
-# 3 Addressing requirements
+# 3 Implementation justification
 
 ## 3.1 Cryptographic algorithms and protocols
+
+### 3.1.1 AES
+
+AES symmetric key encryption has been chosen to be used for the data at rest, i.e. the data in MediCloud or data that is not in transit in general.
+
+Highly efficient and computationally fast – ideal for encrypting and decrypting data of large volumes without causing a significant impact on performance. This is obviously dependent on the clinic's hardware, but even despite that, AES can optimally use the resources its been allocated. It is thus suitable for a healthcare provider since they will have a lot of data traversing between the different clinical services at multiple times and quickly too. The same key is used for both encryption and decryption operations, simplifying key management processes and ensuring efficient, quick data access throughout the system.
+
+Key size is sufficiently large enough that prevents brute force attacks, so sensitive data at rest remains confidential and protected from unauthorised access. AES is an industry standard, and has remained to be for many years due to extensive security analysis by cryptographers, so it is a trusted framework that can be reliabily used.
+
+### 3.1.2 RSA
+
+### 3.1.3 Key management
 
 ## 3.2 Compliance and standards
 
