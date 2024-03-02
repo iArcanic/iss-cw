@@ -13,7 +13,7 @@ csl: docs/report/harvard-imperial-college-london.csl
 
 # 1 Introduction
 
-This report provides a comprehensive narrative description of the proposed cryptographic simulation for the healthcare provider, St. John's Clinic. The design has been implemented in such a way that it addresses the key security gaps within the clinic's data protection requirements, in order to align with compliance standards, and provide robust safeguarding mechanisms to secure sensitive data, that is, patient personal information, medical prescriptions, financial transactions, research data, and so on.
+This report provides a comprehensive description of the proposed cryptographic simulation for the healthcare provider, St. John's Clinic. The design has been implemented in such a way that it addresses the key security gaps within the clinic's data protection requirements, in order to align with compliance standards, and provide robust safeguarding mechanisms to secure sensitive data.
 
 A current analysis of the cybersecurity practices which St. John's Clinic need to implement for security enhancement falls into the following areas of:
 
@@ -25,36 +25,32 @@ A current analysis of the cybersecurity practices which St. John's Clinic need t
 
 # 2 System description
 
-As this is a simulation, a lot of assumptions have been made. These are documented in [Appendix 4.1](#41-simulation-assumptions) as necessary.
-
-Furthermore, a link to the GitHub repository is provided in [Appendix 4.2](#42-github-repository) for the entirety of the source folder structure, and so on.
+As this is a simulation, a lot of assumptions have been made. These are documented in [Appendix 4.1](#41-simulation-assumptions) as necessary. A read of this is highly encouraged, as it will provide insight and understanding around the following implementation.
 
 ## 2.1 Authentication
 
-A robust authentication framework means that only authorised users are allowed to interact with the system. It therefore regulates access to protected sensitive data and clinic services which should otherwise be inaccessible to unauthorised entities.
-
 ### 2.1.1 User registration
 
-Under the assumption that any new users need to be registered securely with the system, a register function has been takes this into consideration. Since this is a simulation, the patient details this function processes are not that substantial to the overall functionality of the system, so only the following have been taken into account:
+Under the assumption that any new users need to be registered securely with the system, the following function takes this into consideration.
 
 ```python
 def register_user(username, password, phone_number)
 ```
 
-A `username` will help be a front-end unique identifier for users. A `password`, obviously, the user provides their custom password which will have the necessary hashing functions applied upon it. The `phone_number` parameter is just more placeholder registration data to fill out the JSON database entry.
+A `username` will help be a front-end unique identifier for users. A `password`, obviously, where the user provides their custom password which will be hashed. The `phone_number` parameter is just more placeholder registration data.
 
-To ensure that the username is unique, it reads the contents of the `USER_DB` JSON file and checks whether the chosen username exists or not – reflective of the actual clinic's system.
+To ensure that the username is unique, it reads the contents of the `USER_DB` (a user database JSON file) and checks whether the chosen username exists or not.
 
 ```python
 users_data = data_read_return_empty_if_not_found(USER_DB)
 
 if username in users_data:
     print(f"register.register_user -> Username '{username}' already exists. "
-        f"Please choose a different username.")
+            f"Please choose a different username.")
     return
 ```
 
-Since we want the authentication framework to be secure, a simulation of two factor authentication is implemented. The two functions that are called in the code below, `generate_2fa_code()` and `send_2fa_code()`, are simple functions that mimic the process. One generates the code and the other "sends" that code to the user's phone. In this case, there is no "sending", so a simple on-screen message is returned. The user then needs to simply repeat this code to the program console and depending upon the code verification, the function flow continues.
+Since we want the authentication framework to be secure, a simulation of two factor authentication is implemented. The two functions that are called in the code below, `generate_2fa_code()` and `send_2fa_code()`, mimic the process. One generates the code and the other "sends" that code to the user's phone. In this case, there is no "sending", so a simple on-screen message is returned. The user then needs to simply repeat this code to the program console, and depending upon the code verification, the function flow continues.
 
 ```python
 two_factor_code = generate_2fa_code()
@@ -68,7 +64,7 @@ else:
     return
 ```
 
-Preparation to store the data in the database takes place here. First using the `uuid` library allows the generation of a UUID 4, and this is converted to a string format. A salt is generated for the hashing of the password using the `bcrypt` library. Note that using `.encode('utf-8')` allows for the password to be converted to bytes first.
+Preparation to store the data in the database takes place here. First using the `uuid` library allows the generation of a UUID 4 string. A salt is generated for the hashing of the password using the `bcrypt` library. Note that using `.encode('utf-8')` allows for the password to be converted to bytes first.
 
 ```python
 user_id = str(uuid.uuid4())
@@ -76,9 +72,7 @@ salt = bcrypt.gensalt()
 hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
 ```
 
-Finally, a new JSON object is created first as a Python dictionary. Note that the `hashed_password` and `salt` all have `.decode('utf-8')`, to allow them to be converted from bytes to strings. This is called JSON serialisation, since JSON does not support the storage of pure bytes.
-
-Using another abstract function. `data_store()`, that I created to simplify file writing, this new JSON object is written to the JSON database file.
+Finally, a new JSON object is created first as a Python dictionary. Note that the `hashed_password` and `salt` all have `.decode('utf-8')`, to allow them to be converted from bytes to strings. This is called JSON serialisation, since JSON does not support the storage of pure bytes. This JSON object is then stored.
 
 ```python
 new_user = {
@@ -93,7 +87,7 @@ users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on the full code implementation see [Appendix 4.3.1.1](#4311-registerpy).
+**NOTE**: for more detail on the full code implementation see [Appendix 4.3.1.1](#4311-registerpy).
 
 ### 2.1.2 User login
 
@@ -120,13 +114,13 @@ salt = user_data['salt']
 phone_number = user_data.get('phone_number', None)
 ```
 
-Since the function is hashed, the `bcrypt` Python library's `.checkpw` function compares the bytes of the entered user's password against the stored hash in the JSON database. Only then will the post processing actions take place if the function returns true based on the hash.
+Since the function is hashed, the `bcrypt` library `.checkpw` function compares the bytes of the entered user's password against the stored hash in the database. If the hashes match, the function resumes execution.
 
 ```python
 if bcrypt.checkpw(entered_password.encode('utf-8'), stored_password_hash.encode('utf-8'))
 ```
 
-Since two factor authentication was proposed for a secure authentication framework, a simulation of sending the one time password code is "sent" to the user's mobile device. If the verification passes, then the an RSA key under the user's ID is generated and stored (see [2.2.1](#221-key-generation) and [2.2.2](#222-key-storage)) in the RSA HSM (Hardware Security Module). The `user_id` and `public_key` public key object is returned from the function for any post login actions.
+Again, the two factor authentication functions are called, and if successful, a RSA key under the user's ID is generated and stored (see [2.2.1](#221-key-generation) and [2.2.2](#222-key-storage)) in the simulated (see [4.1.4](#414-external-dependencies)) RSA HSM (Hardware Security Module). The `user_id` and `public_key` key object is returned from the function for post login actions.
 
 ```python
 two_factor_code = generate_2fa_code()
@@ -139,17 +133,17 @@ if entered_code == two_factor_code:
     return user_data['user_id'], public_key
 ```
 
-For more detail on the full code implementation, see [Appendix 4.3.1.2](#4312-loginpy).
+**NOTE**: for more detail on the full code implementation, see [Appendix 4.3.1.2](#4312-loginpy).
 
 ### 2.1.3 Single Sign-on (SSO)
 
-For SSO, since homegrown SSO within the organisation was implemented, i.e, authentication with username and password, this SSO accounts for external authentication. Since this is the case, the below function os a simulation of this – only requiring a `username`. The backend identity management will be the responsibility of the third party company performing the authentication and returning the result of it.
+For SSO, since homegrown SSO within the organisation was implemented, i.e, authentication with username and password (see [2.1.2](#212-user-login)), this SSO accounts for external identity authentication. The below function is a simulation of this – only requiring a `username`. The backend identity management of the third party company will be the responsible for performing the authentication and returning the result of it.
 
 ```python
 def single_sign_on(username)
 ```
 
-The program flow is terminated if the username isn't found in the user database of the third party company.
+The program flow is terminated via a `ValueError` if the username isn't found in the user database of the third party company.
 
 ```python
 if username not in third_party_data:
@@ -157,7 +151,7 @@ if username not in third_party_data:
                     f"Please register with the third party provider first.")
 ```
 
-The program flow continues if the above is not the case, and using the data content from the JSON file, it then makes a new user entry. The important here is to note that this JSON object has less fields than the regular authentication framework – this is the third party company's responsibility to implement and provide their own identity authentication or any other relevant user details. The important additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login).
+The program flow continues if the above is not the case, and using the data content from the JSON file, it then makes a new user entry. The additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login) in the user database JSON file.
 
 ```python
 third_party_data = third_party_data[username]
@@ -168,22 +162,16 @@ if third_party_data:
         'username': username,
         'third_party_status': True
     }
-```
 
-Finally, this entry is written to the healthcare provider's normal user database.
-
-```python
 users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on the full code implementation, see [Appendix 4.3.1.3](#4313-ssopy).
+**NOTE**: for more detail on the full code implementation, see [Appendix 4.3.1.3](#4313-ssopy).
 
 ## 2.2 Key management
 
-For the chosen encryption algorithms, cryptographic keys serve need to have a well-defined key lifecycle, ensuring the security and integrity of these keys at every stage. Each phase of the lifecycle prevents unauthorised access, data collection or loss, with the aim of maintaining the confidentiality and integrity of these keys.
-
-Since two different encryption algorithms, i.e. RSA and AES, are used, the key lifecycle stages are explained for each where applicable and implemented, but may have different characteristics.
+For the following sections, is is divided into both AES and RSA since two different encryption algorithms were used. The logic may be slightly similar but differ in implementation details.
 
 ### 2.2.1 Key generation
 
@@ -197,11 +185,11 @@ def generate_aes_key():
     return key
 ```
 
-For more detail on the full code implementation see [Appendix 4.3.2.1.1](#43211-key_genpy).
+**NOTE**: For more detail on the full code implementation see [Appendix 4.3.2.1.1](#43211-key_genpy).
 
 #### 2.2.1.2 RSA
 
-For RSA, there is a dedicated library for all RSA encryption functions. Using the `rsa.generate_private_key` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` specifies the public exponent value used in the RSA algorithm. The value of `65537` is the default for most RSA keys. `key_size`, as the name suggests, is the size of the key in bits, so a value of `2048` is a standard size providing a adequate balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library to perform the generation process. A `public_key` can also be derived from the generated private key.
+For RSA, there is a dedicated library for all RSA encryption functions. Using the `rsa.generate_private_key()` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` specifies the public exponent value used in the RSA algorithm with the value of `65537` is the default for most RSA keys. `key_size`, as the name suggests, is the size of the key in bits, so a value of `2048` is a standard size providing a reasonable balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library to perform the generation process. A `public_key` can also be derived from the generated private key.
 
 ```python
 def generate_key_pair():
@@ -214,7 +202,7 @@ def generate_key_pair():
     return private_key, public_key
 ```
 
-For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
+**NOTE**: for more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.2 Key storage
 
@@ -226,7 +214,7 @@ To store the AES symmetric key, it needs to be stored under the corresponding us
 def store_aes_key(user_id, key)
 ```
 
-Using a simple `try` `catch` block, a file open is attempted in order to capture all the existing keys from the file. In the case that the file is not found, then it defaults the `json_data` variable to an empty JSON collection.
+Using a simple `try` `catch` block, a file open operation is attempted in order to capture all the existing keys from the file. If not found, then it defaults the `json_data` variable to an empty JSON collection.
 
 ```python
 try:
@@ -236,7 +224,7 @@ except FileNotFoundError:
     json_data = {"aes_keys": []}
 ```
 
-By iterating through the `aes_keys` JSON collection, if the `user_id` passed in parameter matches the `for` loop's index, it makes an entry for the key, but as a hex object using `.hex()`. This is because the key is passed in as raw bytes, and cannot be stored in the JSON file unless serialised. If not however, then a new entry is made in the `aes_keys` JSON collection, adding in the `user_id` and the `key` as a hex.
+By iterating through the `aes_keys` JSON collection, if the `user_id` passed in parameter matches the `for` loop's index, it makes an entry for the key, but as a hex object using `.hex()`. This is because the key is passed in as raw bytes, and cannot be stored in the JSON file unless serialised. It then stores this.
 
 ```python
 for entry in json_data["aes_keys"]:
@@ -245,30 +233,26 @@ for entry in json_data["aes_keys"]:
         break
     else:
         json_data["aes_keys"].append({"user_id": user_id, "key": key.hex()})
-```
 
-The function then writes the data to the appropriate key store file, which in this case is the `HSM_DB`.
-
-```python
 with open(HSM_DB, 'w') as file:
     json.dump(json_data, file, indent=2)
 ```
 
-For more detail on the full code implementation see [4.3.2.1.2](#43212-key_storepy).
+**NOTE**: for more detail on the full code implementation see [4.3.2.1.2](#43212-key_storepy).
 
 #### 2.2.2.2 RSA
 
-The function that takes care of storing the RSA keys is the same to the AES key store function. This function below, `replace_or_insert_key_from_file()` takes in the `user_id` of the user which the key is stored under, `new_key` being the new RSA generated key from the previous `generate_key_pair()` function, and the `file_path` to the RSA key store.
+The function that takes care of storing the RSA keys is the same as in [2.2.2.1](#2221-aes). This function below, `replace_or_insert_key_from_file()` takes in the `user_id` of the user which the key is stored under, `new_key` being the new RSA generated key from the previous `generate_key_pair()` function, and the `file_path` to the RSA HSM.
 
 ```python
 def replace_or_insert_key_from_file(user_id, new_key, file_path="data/rsa_hsm.json")
 ```
 
-Following on from that, the logic of the function is exactly similar to the AES key store function so no further explanation is needed. One difference is the name in the JSON collection, from `aes_keys` to `rsa_keys` obviously.
+The logic of this function is exactly similar to the AES key store function.
 
-However, one thing to note, is that since the `generate_key_pair()` function returns a the RSA public and private keys in a usable format, i.e. in bytes, it cannot be stored into JSON unless serialised. But in this instance, the RSA keys do not have a callable `.hex()` function so the Python RSA cryptographic library has its own specialised serialised function for this. Instead of bytes, it is converted into a PEM string format. The two functions below take this into account and perform the conversion.
+However, one thing to note, is that since the `generate_key_pair()` function returns a the RSA public and private keys in a usable format, i.e. in bytes, it cannot be stored into JSON unless serialised. But in this instance, the RSA keys do not have a callable `.hex()` function so the Python RSA cryptographic library has its own specialised serialisation functions for this. Instead of bytes, it is converted into a PEM string format. The two functions below take this into account and perform the conversion.
 
-Firstly for the RSA private key, using the `.private_bytes()` function, it takes a couple of arguments. The `encoding` parameter explicitly states that a PEM encoder should be used for a PEM output. The `format` parameter specifies the format for the private key, which in this case is `PKCS8` which is the widely used standard. Finally the `encryption_algorithm` parameter states that there should be no encryption applied to the RSA private key when converted to PEM since the assumption of the simulated HSM is used (see [Appendix 4.1.4](#414-external-dependencies) for further detail). At the end, it decodes the `pem_format` variable from bytes to string to be able to be stored in the JSON file.
+Firstly for the RSA private key, using the `.private_bytes()` function, it takes a couple of arguments. The `encoding` parameter explicitly states that a PEM encoder should be used for a PEM output. The `format` parameter specifies the format for the private key, which in this case is `PKCS8` – which is the widely used standard. Finally the `encryption_algorithm` parameter states that there should be no encryption applied to the RSA private key when converted to PEM since the simulated HSM is assumed to automatically encrypt the keys anyway (see [Appendix 4.1.4](#414-external-dependencies)). At the end, it decodes the `pem_format` variable from bytes to string so that it can be stored in JSON.
 
 ```python
 def pem_convert_private_key(key):
@@ -280,7 +264,7 @@ def pem_convert_private_key(key):
     return pem_format.decode('utf-8')
 ```
 
-The same applies when converting the RSA public key to a PEM format, but this time using the `.private_bytes()` method. The `encoding` parameter in this case remains the same, since a PEM output is required. The `format` parameter however, since this is a public key, is different to the previous value, since this time the standard format suitable for public keys is used. And again, it performs the bytes to string conversion for JSON serialisation.
+The same applies when converting the RSA public key to a PEM format, but this time using the `.private_bytes()` method.
 
 ```python
 def pem_convert_public_key(key):
@@ -291,7 +275,7 @@ def pem_convert_public_key(key):
     return pem_format.decode('utf-8')
 ```
 
-For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
+**NOTE**: for more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.3 Key retrieval
 
@@ -299,13 +283,13 @@ For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_mana
 
 The stored AES keys need to be retrieved for any symmetric encryption processes for the relevant user. This allows for the same key to be used across all the various clinic systems.
 
-As mentioned, this function will accept a `user_id` parameter to return the key for the given user.
+This function will accept a `user_id` parameter to return the key for the given user.
 
 ```python
 def retrieve_key(user_id)
 ```
 
-For this, a simple file read takes place, iterating through the JSON file via a `for` loop. `key_entries` uses a `data_read` utility function to capture all the data from the JSON file. By looping through, it checks for the matching `user_id` and then returns the key in a usable format, i.e. converting it from the stored hex into its original bytes form.
+For this, a simple file read takes place, iterating through the JSON file via a `for` loop. `key_entries` uses a `data_read()` utility function to capture all the data from the JSON file. By looping through, it checks for the matching `user_id` and then returns the key in a usable format, i.e. converting it from the stored hex into its original bytes form.
 
 ```python
 key_entries = data_read(HSM_DB)
@@ -315,23 +299,15 @@ for entry in key_entries["aes_keys"]:
         return bytes.fromhex(entry["key"])
 ```
 
-For more detail on the full code implementation see [4.3.2.1.3](#43213-key_retrievepy).
+**NOTE**: for more detail on the full code implementation see [4.3.2.1.3](#43213-key_retrievepy).
 
 #### 2.2.3.2 RSA
 
-Although there is no explicit function in the `rsa_manager.py` file for key retrieval, wherever required, a simple JSON file read was sufficient enough to obtain the key.
+Although there is no explicit function in the `rsa_manager.py` file for key retrieval, wherever required, a simple JSON file read was sufficient enough to obtain the key, and the logic is exactly the same as in [2.2.3.1](#2231-aes).
 
-For example, in an RSA decryption function implemented later on (see [2.4](#24-data-transmission)), a simple `for` loop iterating through the JSON file was enough. This same logic is implemented separately as a function for the AES `retrieve_key()` module (see [2.2.3.1](#2231-aes)).
+The main issue is the conversion between the PEM string into a usable RSA key format from the JSON serialisation. The following two function address this.
 
-```python
-for key_info in rsa_hsm_data["rsa_keys"]:
-    if key_info["user_id"] == owner_id:
-        private_key_pem = key_info["key"]
-```
-
-What was the main problem was the conversion between the PEM string into a usable RSA key format from the JSON serialisation. The following two function address this.
-
-Below, this function takes in the RSA private key's `pem_string` as a parameter and utilises the cryptographic library's `.load_pem_private_key()` method to load the private key object. The `pem_string` is converted into bytes via `.encode()` since the function expects data in binary form, allowing any non-textual characters or special formatting within the PEM data are preserved accurately. `password` being set to `None` means that there is no password protection applied, which is consistent with the fact that no encryption algorithm was applied in the PEM conversion. As before in [2.2.1.2](#2212-rsa), the `backend` uses the library's default.
+Below, this function takes in the RSA private key's `pem_string` as a parameter and utilises the cryptographic library's `.load_pem_private_key()` method to load the private key object. The `pem_string` is converted into bytes via `.encode()` since the function expects data in binary form, allowing any non-textual characters or special formatting within the PEM data to be preserved accurately. `password` being set to `None` means that there is no password protection applied, which is consistent with the fact that no encryption algorithm was applied in the initial PEM conversion. Again, `backend` uses the library's default backend.
 
 ```python
 def load_private_key_from_pem_string(pem_string):
@@ -343,7 +319,7 @@ def load_private_key_from_pem_string(pem_string):
     return private_key
 ```
 
-The counterpart function, for the RSA public key, is more or less the same. Key differences being the method, `.load_pem_public_key()`, and the omittance of the `password` parameter.
+The counterpart function, for the RSA public key, is more or less the same, except the method being used is `.load_pem_public_key()`.
 
 ```python
 def load_public_key_from_pem_string(pem_string):
@@ -354,7 +330,7 @@ def load_public_key_from_pem_string(pem_string):
     return public_key
 ```
 
-For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
+**NOTE**: For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.4 Key expiry rotation
 
@@ -375,7 +351,7 @@ old_aes_key = retrieve_key(user_id)
 new_aes_key = generate_aes_key()
 ```
 
-By looping through a JSON file containing data used by the various clinical systems, i.e. records (see [2.3](#23-record-management)), the `if` statement helps to determine the right record based on the `user_id`. By getting the data from the `data` field of the JSON object, the old AES key is used to decrypt and replace the contents of the field with its original plaintext form using the `aes_data_decrypt` function (see [2.3.2](#232-decryption)).
+By looping through a JSON file containing data used by the various clinical systems, i.e. records (see [2.3](#23-record-management)), the `if` statement helps to determine the right record based on the `user_id`. By getting the data from the `data` field of the JSON object, the `old_aes_key` is used to decrypt and replace the contents of the field with its original plaintext form using the `aes_data_decrypt()` function (see [2.3.2](#232-decryption)).
 
 ```python
 for record in records_data["records"]:
@@ -383,7 +359,7 @@ for record in records_data["records"]:
         record["data"] = aes_data_decrypt(old_aes_key, record["data"])
 ```
 
-Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Using Python's `base64` library and the relevant method, `b64encode()`, it encodes the cipher text into Base64 binary data. The `.decode()` function will turn this into a string from bytes. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
+Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt()` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Using Python's `base64` library, it encodes the cipher text into Base64 binary data. The `.decode()` function will turn this into a string from bytes. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
 
 ```python
 if record["owner_id"] == user_id:
@@ -394,15 +370,15 @@ if record["owner_id"] == user_id:
     record["data"] = serialized_ciphertext
 ```
 
-For more detail on the full code implementation, see [4.3.2.1.4](#43214-key_expirepy).
+**NOTE**: for more detail on the full code implementation, see [4.3.2.1.4](#43214-key_expirepy).
 
 #### 2.2.4.2 RSA
 
-For RSA, there is no explicit key expiry implemented. This is because each time the user logins, both their RSA public and private keys are dynamically refreshed and re-generated (see [2.1.2](#212-user-login)).
+For RSA, there is no explicit key expiry implemented. This is because each time the user logins, both their RSA public and private keys are dynamically refreshed and re-generated (see [2.1.2](#212-user-login)), so no key rotation is required.
 
 ## 2.3 Record management
 
-In this system, data is organised into data records, which serve as the fundamental units of information storage. Users from the various clinical services interacting with the system, have the capability to both create new records and store them within the system's database, as well as retrieve existing records as needed. These records are structured as JSON objects.
+In this system, data is organised into records, which serve as the fundamental units of information storage. Users from the various clinical services interacting with the system, have the capability to both create new records and store them within the system's database, as well as retrieve existing records as needed. These records are structured as JSON objects.
 
 ### 2.3.1 Encryption
 
@@ -412,23 +388,26 @@ For data at rest, AES symmetric encryption has been used, and the following func
 def aes_encrypt(key, data)
 ```
 
-Simple exception handling is implemented, checking whether the AES key length is 32. This also gives assurance that the AES key is only generated by the corresponding function (see [2.2.2.1](#2221-aes)) within the crypto system and no external keys are being used – the key cannot be manipulated or corrupted by malicious actors. If data is encrypted with an invalid key, the cipher text is corrupted and cannot be recovered to its original state, so therefore this prevents the malformed cipher text from propagating throughout the different clinical systems.
+Simple exception handling is implemented, checking whether the AES key length is 32. This also gives assurance that the AES key is only generated by the `generate_aes_key()` within the crypto system and no external keys are being used – the key cannot be manipulated or corrupted by malicious actors. If data is encrypted with an invalid key, the cipher text is corrupted and cannot be recovered to its original state, so therefore this prevents the malformed cipher text from propagating throughout the different clinical systems.
 
 ```python
 if len(key) != 32:
     raise ValueError("AES key must be 32 bytes long for AES-256")
 ```
 
-A new initialisation vector is created using the `os` Python library to create a random to create a random binary string (like in [2.2.2.1](#2211-aes)) of 16 bytes (or 128 bits). An initialisation vector ensures cryptographic randomness and true variance in the different cipher texts generated, so each encrypted piece of data is truly unique.
+A new initialisation vector is created using the `os` Python library to create a random to create a random binary string of 16 bytes (or 128 bits). An initialisation vector ensures cryptographic randomness and true variance in the different cipher texts generated, so each encrypted piece of data is truly unique.
 
 ```python
 iv = os.urandom(16)
 ```
 
-Here, a new cryptographic cipher is created, which is an object that can perform the encryption process. The `algorithms.AES(key)` parameter means that this encryption should use AES symmetric encryption with the given `key`. With `modes.CFB(iv)`, it ensures that it uses CFB (Cipher Feedback) mode of operation for block ciphers with the initialisation vector passed in. Finally, the `backend` is the cryptographic library's default (similar in [2.2.1.2](#2212-rsa) RSA key generation).
+Here, a new cryptographic cipher is created, which is an object that can perform the encryption process. The `algorithms.AES(key)` parameter means that this encryption should use AES symmetric encryption with the given `key`. `modes.CFB(iv)` ensures that it uses CFB (Cipher Feedback) mode of operation for block ciphers using the initialisation vector. Finally, the `backend` is the library's default.
 
 ```python
-cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+cipher = Cipher(
+    algorithms.AES(key),
+    modes.CFB(iv),
+    backend=default_backend())
 ```
 
 A new encryptor is created from the previous initialised cipher object. This will perform the necessary encryption for the given `data`.
@@ -449,7 +428,7 @@ The final, true form of the cipher text is returned, as a concatenation of the i
 return iv + ciphertext
 ```
 
-For more detail on the full code implementation, see [4.3.3.1](#4331-encryptionpy).
+**NOTE**: for more detail on the full code implementation, see [4.3.3.1](#4331-encryptionpy).
 
 ### 2.3.2 Decryption
 
@@ -503,7 +482,7 @@ Finally, as the `decryptor` returns the plain text in bytes, using `decode()`, i
 return decrypted_data.decode()
 ```
 
-For more detail on the full code implementation, see [4.3.3.2](#4332-decryptionpy).
+**NOTE**: for more detail on the full code implementation, see [4.3.3.2](#4332-decryptionpy).
 
 ### 2.3.3 Role Based Access Control (RBAC)
 
@@ -583,7 +562,7 @@ To call this wrapper function upon other functions, the syntax is like so.
 def record_store(...)
 ```
 
-For more detail on the full code implementation, see [4.3.3.3](#4333-role_checkpy).
+**NOTE**: for more detail on the full code implementation, see [4.3.3.3](#4333-role_checkpy).
 
 ### 2.3.4 Store records
 
@@ -625,7 +604,7 @@ json.dump(json_data, file, indent=2)
 return record_id
 ```
 
-For more detail on the full code implementation, see [4.3.3.4](#4334-record_storepy).
+**NOTE**: for more detail on the full code implementation, see [4.3.3.4](#4334-record_storepy).
 
 ### 2.3.5 Retrieve records
 
@@ -665,7 +644,7 @@ Using the `data` field of the record JSON object, the decryption process is perf
 return records_list
 ```
 
-For more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
+**NOTE**: for more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
 
 #### 2.3.5.1 Individual access record retrieval
 
@@ -705,7 +684,7 @@ record["data"] = aes_data_decrypt(aes_key, record["data"])
 return record
 ```
 
-For more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
+**NOTE**: for more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
 
 ## 2.4 Data transmission
 
@@ -739,7 +718,7 @@ ciphertext = public_key.encrypt(
     return ciphertext
 ```
 
-For more detail on the full code implementation, see [4.3.2.2](#4322-rsa_key_managerpy).
+**NOTE**: for more detail on the full code implementation, see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.4.2 Decryption
 
@@ -796,7 +775,7 @@ return func(
 )
 ```
 
-For more detail on the full code implementation, see [4.3.4.1](#4341-decrypt_datapy).
+**NOTE**: for more detail on the full code implementation, see [4.3.4.1](#4341-decrypt_datapy).
 
 # 3 Addressing requirements
 
