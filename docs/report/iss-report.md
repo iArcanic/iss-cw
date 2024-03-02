@@ -25,7 +25,9 @@ A current analysis of the cybersecurity practices which St. John's Clinic need t
 
 # 2 System description
 
-For reference, please see [Appendix 5.1](#51-sequence-diagram) for the sequence diagram.
+As this is a simulation, a lot of assumptions have been made. These are documented in [Appendix 4.1](#41-simulation-assumptions) as necessary.
+
+Furthermore, a link to the GitHub repository is provided in [Appendix 4.2](#42-github-repository) for the entirety of the source folder structure, and so on.
 
 ## 2.1 Authentication
 
@@ -91,7 +93,7 @@ users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on the full code implementation see [Appendix 5.3.1.1](#5311-registerpy).
+For more detail on the full code implementation see [Appendix 4.3.1.1](#4311-registerpy).
 
 ### 2.1.2 User login
 
@@ -137,7 +139,7 @@ if entered_code == two_factor_code:
     return user_data['user_id'], public_key
 ```
 
-For more detail on the full code implementation, see [Appendix 5.3.1.2](#5312-loginpy).
+For more detail on the full code implementation, see [Appendix 4.3.1.2](#4312-loginpy).
 
 ### 2.1.3 Single Sign-on (SSO)
 
@@ -175,7 +177,7 @@ users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
 
-For more detail on the full code implementation, see [Appendix 5.3.1.3](#5313-ssopy).
+For more detail on the full code implementation, see [Appendix 4.3.1.3](#4313-ssopy).
 
 ## 2.2 Key management
 
@@ -195,7 +197,7 @@ def generate_aes_key():
     return key
 ```
 
-For more detail on the full code implementation see [Appendix 5.3.2.1.1](#53211-key_genpy).
+For more detail on the full code implementation see [Appendix 4.3.2.1.1](#43211-key_genpy).
 
 #### 2.2.1.2 RSA
 
@@ -212,7 +214,7 @@ def generate_key_pair():
     return private_key, public_key
 ```
 
-For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
+For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.2 Key storage
 
@@ -252,7 +254,7 @@ with open(HSM_DB, 'w') as file:
     json.dump(json_data, file, indent=2)
 ```
 
-For more detail on the full code implementation see [5.3.2.1.2](#53212-key_storepy).
+For more detail on the full code implementation see [4.3.2.1.2](#43212-key_storepy).
 
 #### 2.2.2.2 RSA
 
@@ -266,7 +268,7 @@ Following on from that, the logic of the function is exactly similar to the AES 
 
 However, one thing to note, is that since the `generate_key_pair()` function returns a the RSA public and private keys in a usable format, i.e. in bytes, it cannot be stored into JSON unless serialised. But in this instance, the RSA keys do not have a callable `.hex()` function so the Python RSA cryptographic library has its own specialised serialised function for this. Instead of bytes, it is converted into a PEM string format. The two functions below take this into account and perform the conversion.
 
-Firstly for the RSA private key, using the `.private_bytes()` function, it takes a couple of arguments. The `encoding` parameter explicitly states that a PEM encoder should be used for a PEM output. The `format` parameter specifies the format for the private key, which in this case is `PKCS8` which is the widely used standard. Finally the `encryption_algorithm` parameter states that there should be no encryption applied to the RSA private key when converted to PEM since the assumption of the HSM (a simulated one) is used (see []() for further detail). At the end, it decodes the `pem_format` variable from bytes to string to be able to be stored in the JSON file.
+Firstly for the RSA private key, using the `.private_bytes()` function, it takes a couple of arguments. The `encoding` parameter explicitly states that a PEM encoder should be used for a PEM output. The `format` parameter specifies the format for the private key, which in this case is `PKCS8` which is the widely used standard. Finally the `encryption_algorithm` parameter states that there should be no encryption applied to the RSA private key when converted to PEM since the assumption of the simulated HSM is used (see [Appendix 4.1.4](#414-external-dependencies) for further detail). At the end, it decodes the `pem_format` variable from bytes to string to be able to be stored in the JSON file.
 
 ```python
 def pem_convert_private_key(key):
@@ -289,7 +291,7 @@ def pem_convert_public_key(key):
     return pem_format.decode('utf-8')
 ```
 
-For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
+For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.3 Key retrieval
 
@@ -313,13 +315,13 @@ for entry in key_entries["aes_keys"]:
         return bytes.fromhex(entry["key"])
 ```
 
-For more detail on the full code implementation see [5.3.2.1.3](#53213-key_retrievepy).
+For more detail on the full code implementation see [4.3.2.1.3](#43213-key_retrievepy).
 
 #### 2.2.3.2 RSA
 
 Although there is no explicit function in the `rsa_manager.py` file for key retrieval, wherever required, a simple JSON file read was sufficient enough to obtain the key.
 
-For example, in an RSA decryption function implemented later on (see [2.3](#23-data-transmission)), a simple `for` loop iterating through the JSON file was enough. This same logic is implemented seperately as a function for the AES `retrieve_key()` module (see [2.2.3.1](#2231-aes)).
+For example, in an RSA decryption function implemented later on (see [2.4](#24-data-transmission)), a simple `for` loop iterating through the JSON file was enough. This same logic is implemented separately as a function for the AES `retrieve_key()` module (see [2.2.3.1](#2231-aes)).
 
 ```python
 for key_info in rsa_hsm_data["rsa_keys"]:
@@ -352,7 +354,7 @@ def load_public_key_from_pem_string(pem_string):
     return public_key
 ```
 
-For more detail on the full code implementation see [5.3.2.2](#5322-rsa_key_managerpy).
+For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.4 Key expiry rotation
 
@@ -392,7 +394,7 @@ if record["owner_id"] == user_id:
     record["data"] = serialized_ciphertext
 ```
 
-For more detail on the full code implementation, see [5.3.2.1.4](#53214-key_expirepy).
+For more detail on the full code implementation, see [4.3.2.1.4](#43214-key_expirepy).
 
 #### 2.2.4.2 RSA
 
@@ -447,7 +449,7 @@ The final, true form of the cipher text is returned, as a concatenation of the i
 return iv + ciphertext
 ```
 
-For more detail on the full code implementation, see [5.3.3.1](#5331-encryptionpy).
+For more detail on the full code implementation, see [4.3.3.1](#4331-encryptionpy).
 
 ### 2.3.2 Decryption
 
@@ -501,7 +503,7 @@ Finally, as the `decryptor` returns the plain text in bytes, using `decode()`, i
 return decrypted_data.decode()
 ```
 
-For more detail on the full code implementation, see [5.3.3.2](#5332-decryptionpy).
+For more detail on the full code implementation, see [4.3.3.2](#4332-decryptionpy).
 
 ### 2.3.3 Role Based Access Control (RBAC)
 
@@ -581,7 +583,7 @@ To call this wrapper function upon other functions, the syntax is like so.
 def record_store(...)
 ```
 
-For more detail on the full code implementation, see [5.3.3.3](#5333-role_checkpy).
+For more detail on the full code implementation, see [4.3.3.3](#4333-role_checkpy).
 
 ### 2.3.4 Store records
 
@@ -623,7 +625,7 @@ json.dump(json_data, file, indent=2)
 return record_id
 ```
 
-For more detail on the full code implementation, see [5.3.3.4](#5334-record_storepy).
+For more detail on the full code implementation, see [4.3.3.4](#4334-record_storepy).
 
 ### 2.3.5 Retrieve records
 
@@ -663,7 +665,7 @@ Using the `data` field of the record JSON object, the decryption process is perf
 return records_list
 ```
 
-For more detail on the full code implementation, see [5.3.3.5](#5335-record_retrievepy).
+For more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
 
 #### 2.3.5.1 Individual access record retrieval
 
@@ -703,7 +705,7 @@ record["data"] = aes_data_decrypt(aes_key, record["data"])
 return record
 ```
 
-For more detail on the full code implementation, see [5.3.3.5](#5335-record_retrievepy).
+For more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
 
 ## 2.4 Data transmission
 
@@ -737,7 +739,7 @@ ciphertext = public_key.encrypt(
     return ciphertext
 ```
 
-For more detail on the full code implementation, see [5.3.2.2](#5322-rsa_key_managerpy).
+For more detail on the full code implementation, see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.4.2 Decryption
 
@@ -794,9 +796,9 @@ return func(
 )
 ```
 
-For more detail on the full code implementation, see [5.3.4.1](#5341-decrypt_datapy).
+For more detail on the full code implementation, see [4.3.4.1](#4341-decrypt_datapy).
 
-# 3 Implementation justification
+# 3 Addressing requirements
 
 ## 3.1 Cryptographic algorithms and protocols
 
@@ -836,26 +838,84 @@ Albeit simulated, the use of secure key management practices such as a Hardware 
 
 The implementation of the role-based access control system (RBAC) alongside the encryption provided via AES and RSA further strengthens data protection by only allowing access to certain individuals based on their roles and permissions. The reason for this is to adhere to the principle of data "minimisation" outlined in Article 5 of GDPR [@intersoftconsulting2] and Section 1798.110 of CCPA [@casetext2]. By only allowing the most minimal privileges for the user, this allows users to still perform their jobs and functionality whilst also preventing unauthorised data access or any leaks.
 
-# 4 Assumptions taken
+# 4 Appendices
 
-# 5 Appendices
+## 4.1 Simulation assumptions
 
-## 5.1 Sequence diagram
+### 4.1.1 System definition
 
-![Sequence diagram pt. 1](images/sequence-diagram-1.png)
-![Sequence diagram pt. 2](images/sequence-diagram-2.png)
+**NOTE**: This implementation is **NOT** intended to be defined as a "system" or "cryptosystem" of any kind. Rather, each module or function is treated as a separate API (that implements the cryptographic logic). It would ultimately be the responsibility of the developer to combine these APIs and form a coherent "system" of both a back-end and front-end, and facilitate the appropriate communication between them.
 
-## 5.2 GitHub repository
+### 4.1.2 Simulation scope
+
+- Certain aspects like physical hardware, secure deployment environments, and network infrastructure are out of scope and are assumed to be secure already.
+- Only workflows involving cryptographic protocols and access controls are focussed on.
+- A simple command line interface with appropriate annotations via `print()` statements is implemented – no advanced GUI.
+
+### 4.1.3 Data
+
+- Sample data within the [`data`](https://github.com/iArcanic/iss-cw/tree/main/data) folder.
+- No real production data that is reflective of a real-time system is used.
+- Data in a real-time system may use an SQL relational database, but this simulation uses simple JSON objects.
+
+### 4.1.4 External dependencies
+
+- HSMs (Hardware Security Module), and PKIs (Public Key Infrastructure) are simulated as simple JSON objects.
+- Third-party key repositories and certification authorities are not simulated.
+
+### 4.1.5 Compliance requirements
+
+- Simulation attempts to provide compliance with GDPR, CCPA, and PSD2.
+- Final compliance responsibility ultimately lies with the healthcare provider
+
+### 4.1.6 Authentication
+
+- Advanced enterprise IAM (Identity Access Management) not implemented in simulation.
+- Only simple username and password-based authentication suffices for simulation.
+- More advanced hardware-based authentication controls, like biometric or facial are up to the company to consider.
+
+### 4.1.7 Roles
+
+- All JSON "databases" are stored in the healthcare provider's cloud service, MediCloud.
+- Users are granted roles by an admin manually beforehand.
+- User roles assumed, like doctor, nurse, and so on based on common healthcare provider norms.
+- Only core attributes simulated - advanced RBAC left for actual enterprise integration.
+
+### 4.1.8 Cryptographic algorithms
+
+- Basic implementation of industry-standard encryption algorithms simulated to a basic level.
+- Additional platform-specific encryption algorithms are not implemented.
+
+### 4.1.9 Key management
+
+- Only essential stages in the key management lifecycle are able to be simulated – generation, storage, usage, and rotation.
+- Actual HSM synchronisation protocols are not considered.
+
+### 4.1.10 Exception handling
+
+- Core exception handling is done but extensive error flows are not implemented.
+
+### 4.1.11 Concurrency
+
+- Only one test case workflow is run at a time.
+- Parallel processing capabilities of different workflows are not considered.
+
+### 4.1.12 Performance
+
+- Code optimisation not achieved to full capabilities.
+- Large-scale data, user and cryptographic operation performance testing not done.
+
+## 4.2 GitHub repository
 
 Link to GitHub repository, containing full code and installation documentation.
 
 [iss-cw3 GitHub repository](https://github.com/iArcanic/iss-cw)
 
-## 5.3 Implementation source code
+## 4.3 Implementation source code
 
-### 5.3.1 Authentication
+### 4.3.1 Authentication
 
-#### 5.3.1.1 `register.py`
+#### 4.3.1.1 `register.py`
 
 ```python
 import uuid
@@ -922,7 +982,7 @@ def register_user(username, password, phone_number):
           f"Login with your new account to continue.")
 ```
 
-#### 5.3.1.2 `login.py`
+#### 4.3.1.2 `login.py`
 
 ```python
 import bcrypt
@@ -978,7 +1038,7 @@ def login_user(username, password):
         print("login.login_user -> Incorrect password. Login aborted.")
 ```
 
-### 5.3.1.3 `sso.py`
+### 4.3.1.3 `sso.py`
 
 ```python
 import uuid
@@ -1028,11 +1088,11 @@ def single_sign_on(username):
         print("sso.single_sign_on -> Third party authentication failed. SSO login aborted.")
 ```
 
-### 5.3.2 Key management
+### 4.3.2 Key management
 
-#### 5.3.2.1 AES key functions
+#### 4.3.2.1 AES key functions
 
-##### 5.3.2.1.1 `key_gen.py`
+##### 4.3.2.1.1 `key_gen.py`
 
 ```python
 import os
@@ -1043,7 +1103,7 @@ def generate_aes_key():
     return key
 ```
 
-##### 5.3.2.1.2 `key_store.py`
+##### 4.3.2.1.2 `key_store.py`
 
 ```python
 import base64
@@ -1082,7 +1142,7 @@ def store_aes_key(user_id, key):
         json.dump(json_data, file, indent=2)
 ```
 
-##### 5.3.2.1.3 `key_retrieve.py`
+##### 4.3.2.1.3 `key_retrieve.py`
 
 ```python
 from src.data_manager import *
@@ -1105,9 +1165,9 @@ def retrieve_key(user_id):
     return None
 ```
 
-##### 5.3.2.1.4 `key_expire.py`
+##### 4.3.2.1.4 `key_expire.py`
 
-> NOTE: The `expire_aes_key` function is implemented within the `key_store.py` (see [5.3.2.1.2](#53212-key_storepy)) rather than in its own separate file. For clarity and understanding purposes, it has been presented in here as its own distinct file.
+> NOTE: The `expire_aes_key` function is implemented within the `key_store.py` (see [4.3.2.1.2](#43212-key_storepy)) rather than in its own separate file. For clarity and understanding purposes, it has been presented in here as its own distinct file.
 
 ```python
 import base64
@@ -1158,7 +1218,7 @@ def expire_aes_key(user_id):
     data_store(RECORDS_DB, records_data)
 ```
 
-#### 5.3.2.2 `rsa_key_manager.py`
+#### 4.3.2.2 `rsa_key_manager.py`
 
 ```python
 import json
@@ -1290,9 +1350,9 @@ def load_public_key_from_pem_string(pem_string):
     return public_key
 ```
 
-### 5.3.3 Record management
+### 4.3.3 Record management
 
-#### 5.3.3.1 `encryption.py`
+#### 4.3.3.1 `encryption.py`
 
 ```python
 import os
@@ -1321,7 +1381,7 @@ def aes_encrypt(key, data):
     return iv + ciphertext
 ```
 
-#### 5.3.3.2 `decryption.py`
+#### 4.3.3.2 `decryption.py`
 
 ```python
 import base64
@@ -1357,7 +1417,7 @@ def aes_data_decrypt(aes_key, data):
     return plaintext.decode()
 ```
 
-#### 5.3.3.3 `role_check.py`
+#### 4.3.3.3 `role_check.py`
 
 ```python
 import json
@@ -1413,7 +1473,7 @@ def role_check_decorator(func):
     return wrapper
 ```
 
-#### 5.3.3.4 `record_store.py`
+#### 4.3.3.4 `record_store.py`
 
 ```python
 import base64
@@ -1480,7 +1540,7 @@ def record_store(owner_id, data, meta_data, permission, decrypted_data, individu
         print(f"record_store.record_store -> {RECORDS_DB} not found.")
 ```
 
-#### 5.3.3.5 `record_retrieve.py`
+#### 4.3.3.5 `record_retrieve.py`
 
 ```python
 from src.decryption import aes_data_decrypt
@@ -1544,9 +1604,9 @@ def record_retrieve_by_id(record_id, user_id):
         )
 ```
 
-### 5.3.4 Data transmission
+### 4.3.4 Data transmission
 
-#### 5.3.4.1 `decrypt_data.py`
+#### 4.3.4.1 `decrypt_data.py`
 
 ```python
 from src.data_manager import *
@@ -1582,4 +1642,4 @@ def rsa_decrypt_data_decorator(func):
     return wrapper
 ```
 
-# 6 References
+# 5 References

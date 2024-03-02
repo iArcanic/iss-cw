@@ -3,7 +3,7 @@
 ![Python Version](https://img.shields.io/badge/Python-3.x-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-A cryptosystem simulation for a healthcare provider service, St. John's Clinic.
+A cryptographic simulation for a healthcare provider service, St. John's Clinic.
 
 ## 1 Description
 
@@ -21,22 +21,22 @@ A Python simulation of various APIs that use cryptographic implementations to me
 
 ### 2.2 Data protection
 
-- AES-256 encryption to secure sensitive data-at-rest
+- AES-256 encryption to secure sensitive data at rest
 - RSA encryption for secure data transmission
 - Role Based Access Control (RBAC) with role permissions to allow need-based data access
 
 ### 2.3 Key management
 
-- Random cryptographic key generation 
+- Random cryptographic key generation
 - Simulation of HSM (Hardware Security Module) key store
 - Simulation of key retrieval from HSM key store
-- RSA key refresh upon every login
+- RSA key refreshes upon every login
 - AES key expiry and rotation
 
 ### 2.4 Record management
 
 - Storing of records based on permissions and roles
-- Retrieving of records based on permissions and roles
+- Retrieving records based on permissions and roles
 - Encrypted sensitive data
 - Grant individual record access to specific users
 
@@ -122,10 +122,13 @@ pytest -s *.py
 ```
 
 > NOTE: In the case of any error like so:
+>
 > ```bash
 > E   ModuleNotFoundError: No module named 'src'
 > ```
+>
 > Please re-run the path environment variable command from [4.1](#41-set-environment-variable):
+>
 > ```bash
 > export PYTHONPATH=/path/to/project:$PYTHONPATH
 > ```
@@ -136,6 +139,7 @@ pytest -s *.py
 
 - Certain aspects like physical hardware, secure deployment environments, and network infrastructure are out of scope and are assumed to be secure already.
 - Only workflows involving cryptographic protocols and access controls are focussed on.
+- A simple command line interface with appropriate annotations via `print()` statements is implemented – no advanced GUI.
 
 ### 5.2 Data
 
@@ -145,19 +149,19 @@ pytest -s *.py
 
 ### 5.3 External dependencies
 
-- HSMs (Hardware Security Module), PKIs (Public Key Infrastructure) are simulated as simple JSON objects.
-- Third party key repositories and certification authorities not simulated.
+- HSMs (Hardware Security Module), and PKIs (Public Key Infrastructure) are simulated as simple JSON objects.
+- Third-party key repositories and certification authorities are not simulated.
 
 ### 5.4 Compliance requirements
 
 - Simulation attempts to provide compliance with GDPR, CCPA, and PSD2.
-- Final compliance responsibility ultimately lies with healthcare provider
+- Final compliance responsibility ultimately lies with the healthcare provider
 
 ### 5.5 Authentication
 
-- Advance enterprise IAM (Identity Access Management) not implemented in simulation.
-- Only simple username and password based authentication suffices for simulation.
-- More advanced hardware based authentication controls, like biometric, facial, or hardware based is up to the company to consider.
+- Advanced enterprise IAM (Identity Access Management) not implemented in simulation.
+- Only simple username and password-based authentication suffices for simulation.
+- More advanced hardware-based authentication controls, like biometric or facial are up to the company to consider.
 
 ### 5.6 Roles
 
@@ -168,24 +172,24 @@ pytest -s *.py
 
 ### 5.7 Cryptographic algorithms
 
-- Basic implementation of industry standard encryption algorithms simulated to a basic level.
-- Additional platform specific encryption algorithms not implemented.
+- Basic implementation of industry-standard encryption algorithms simulated to a basic level.
+- Additional platform-specific encryption algorithms are not implemented.
 
 ### 5.8 Key management
 
-- Only essential stages in the key management lifecycle able to be simulated – generation, storage, usage, and rotation.
-- Actual HSM synchronisation protocols not considered.
+- Only essential stages in the key management lifecycle are able to be simulated – generation, storage, usage, and rotation.
+- Actual HSM synchronisation protocols are not considered.
 
 ### 5.9 Exception handling
 
-- Core exception handling done but extensive error flows not implemented.
+- Core exception handling is done but extensive error flows are not implemented.
 
 ### 5.10 Concurrency
 
 - Only one test case workflow is run at a time.
-- Parallel processing capabilities of different workflows not considered.
+- Parallel processing capabilities of different workflows are not considered.
 
 ### 5.11 Performance
 
 - Code optimisation not achieved to full capabilities.
-- Large scale data, user and cryptographic operation performance testing not done.
+- Large-scale data, user and cryptographic operation performance testing not done.
