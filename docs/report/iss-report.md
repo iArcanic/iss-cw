@@ -907,15 +907,15 @@ The implementation of the role-based access control system (RBAC) alongside the 
 
 ## 4.2 GitHub repository
 
-Link to GitHub repository, containing full code and installation documentation.
+Link to GitHub repository, containing full code and installation documentation:
 
-[iss-cw3 GitHub repository](https://github.com/iArcanic/iss-cw)
+> [https://github.com/iArcanic/iss-cw](https://github.com/iArcanic/iss-cw)
 
 ## 4.3 Implementation source code
 
 ### 4.3.1 Authentication
 
-#### 4.3.1.1 `register.py`
+#### 4.3.1.1 [`register.py`](https://github.com/iArcanic/iss-cw/blob/main/src/authentication/register.py)
 
 ```python
 import uuid
@@ -982,7 +982,7 @@ def register_user(username, password, phone_number):
           f"Login with your new account to continue.")
 ```
 
-#### 4.3.1.2 `login.py`
+#### 4.3.1.2 [`login.py`](https://github.com/iArcanic/iss-cw/blob/main/src/authentication/login.py)
 
 ```python
 import bcrypt
@@ -1038,7 +1038,7 @@ def login_user(username, password):
         print("login.login_user -> Incorrect password. Login aborted.")
 ```
 
-### 4.3.1.3 `sso.py`
+### 4.3.1.3 [`sso.py`](https://github.com/iArcanic/iss-cw/blob/main/src/authentication/sso.py)
 
 ```python
 import uuid
@@ -1092,7 +1092,7 @@ def single_sign_on(username):
 
 #### 4.3.2.1 AES key functions
 
-##### 4.3.2.1.1 `key_gen.py`
+##### 4.3.2.1.1 [`key_gen.py`](https://github.com/iArcanic/iss-cw/blob/main/src/key_management/key_gen.py)
 
 ```python
 import os
@@ -1103,7 +1103,7 @@ def generate_aes_key():
     return key
 ```
 
-##### 4.3.2.1.2 `key_store.py`
+##### 4.3.2.1.2 [`key_store.py`](https://github.com/iArcanic/iss-cw/blob/main/src/key_management/key_store.py)
 
 ```python
 import base64
@@ -1142,7 +1142,7 @@ def store_aes_key(user_id, key):
         json.dump(json_data, file, indent=2)
 ```
 
-##### 4.3.2.1.3 `key_retrieve.py`
+##### 4.3.2.1.3 [`key_retrieve.py`](https://github.com/iArcanic/iss-cw/blob/main/src/key_management/key_retrieve.py)
 
 ```python
 from src.data_manager import *
@@ -1167,7 +1167,7 @@ def retrieve_key(user_id):
 
 ##### 4.3.2.1.4 `key_expire.py`
 
-> NOTE: The `expire_aes_key` function is implemented within the `key_store.py` (see [4.3.2.1.2](#43212-key_storepy)) rather than in its own separate file. For clarity and understanding purposes, it has been presented in here as its own distinct file.
+> NOTE: The `expire_aes_key` function is implemented within the [`key_store.py`](https://github.com/iArcanic/iss-cw/blob/main/src/key_management/key_store.py) (see [4.3.2.1.2](#43212-key_storepy)) rather than in its own separate file. For clarity and understanding purposes, it has been presented in here as its own distinct file.
 
 ```python
 import base64
@@ -1218,7 +1218,7 @@ def expire_aes_key(user_id):
     data_store(RECORDS_DB, records_data)
 ```
 
-#### 4.3.2.2 `rsa_key_manager.py`
+#### 4.3.2.2 [`rsa_key_manager.py`](https://github.com/iArcanic/iss-cw/blob/main/src/key_management/rsa_key_manager.py)
 
 ```python
 import json
@@ -1352,7 +1352,7 @@ def load_public_key_from_pem_string(pem_string):
 
 ### 4.3.3 Record management
 
-#### 4.3.3.1 `encryption.py`
+#### 4.3.3.1 [`encryption.py`](https://github.com/iArcanic/iss-cw/blob/main/src/encryption.py)
 
 ```python
 import os
@@ -1381,7 +1381,7 @@ def aes_encrypt(key, data):
     return iv + ciphertext
 ```
 
-#### 4.3.3.2 `decryption.py`
+#### 4.3.3.2 [`decryption.py`](https://github.com/iArcanic/iss-cw/blob/main/src/decryption.py)
 
 ```python
 import base64
@@ -1417,7 +1417,7 @@ def aes_data_decrypt(aes_key, data):
     return plaintext.decode()
 ```
 
-#### 4.3.3.3 `role_check.py`
+#### 4.3.3.3 [`role_check.py`](https://github.com/iArcanic/iss-cw/blob/main/src/role_check.py)
 
 ```python
 import json
@@ -1473,7 +1473,7 @@ def role_check_decorator(func):
     return wrapper
 ```
 
-#### 4.3.3.4 `record_store.py`
+#### 4.3.3.4 [`record_store.py`](https://github.com/iArcanic/iss-cw/blob/main/src/record_management/record_store.py)
 
 ```python
 import base64
@@ -1540,7 +1540,7 @@ def record_store(owner_id, data, meta_data, permission, decrypted_data, individu
         print(f"record_store.record_store -> {RECORDS_DB} not found.")
 ```
 
-#### 4.3.3.5 `record_retrieve.py`
+#### 4.3.3.5 [`record_retrieve.py`](https://github.com/iArcanic/iss-cw/blob/main/src/record_management/record_retrieve.py)
 
 ```python
 from src.decryption import aes_data_decrypt
@@ -1606,7 +1606,7 @@ def record_retrieve_by_id(record_id, user_id):
 
 ### 4.3.4 Data transmission
 
-#### 4.3.4.1 `decrypt_data.py`
+#### 4.3.4.1 [`decrypt_data.py`](https://github.com/iArcanic/iss-cw/blob/main/src/decrypt_data.py)
 
 ```python
 from src.data_manager import *
