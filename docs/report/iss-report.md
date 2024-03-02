@@ -806,13 +806,33 @@ AES symmetric key encryption has been chosen to be used for the data at rest, i.
 
 Highly efficient and computationally fast – ideal for encrypting and decrypting data of large volumes without causing a significant impact on performance. This is obviously dependent on the clinic's hardware, but even despite that, AES can optimally use the resources its been allocated. It is thus suitable for a healthcare provider since they will have a lot of data traversing between the different clinical services at multiple times and quickly too. The same key is used for both encryption and decryption operations, simplifying key management processes and ensuring efficient, quick data access throughout the system.
 
-Key size is sufficiently large enough that prevents brute force attacks, so sensitive data at rest remains confidential and protected from unauthorised access. AES is an industry standard, and has remained to be for many years due to extensive security analysis by cryptographers, so it is a trusted framework that can be reliabily used.
+Key size is sufficiently large enough that prevents brute force attacks, so sensitive data at rest remains confidential and protected from unauthorised access. AES is an industry standard, and has remained to be for many years due to extensive security analysis by cryptographers, so it is a trusted framework that can be reliably used.
 
 ### 3.1.2 RSA
 
-### 3.1.3 Key management
+RSA asymmetric encryption has been chosen for encrypting data that is in transit, that being the data that is propagated around the various systems of the clinic.
+
+Since data transmission can potentially occur over unsecured networks, it is important that confidentiality is ensured at all times. As seen in [2.1.2](#212-user-login), the public key is not secured at all and widely distributed to the simulated client side but the private key isn't. This ensures that data encrypted with the public key can only be decrypted with the corresponding user's private key, so sensitive data is protected.
+
+Although not implemented, the clinic would highly benefit from the use of a PKI (Public Key Infrastructure) to manage multiple public keys efficiently. If the clinic does grow in size in its user base or external partners, then this algorithm ensures scalability.
 
 ## 3.2 Compliance and standards
+
+The proposed cryptographic solution needs to comply with relevant data protection regulations. These include:
+
+- **General Data Protection Regulation (GDPR)**: European Union (EU) regulation for the processing of personal data of users within the EU region and the European Economic Area (EEA) [@wolford].
+- **California Consumer Privacy Act (CCPA)**: A Californian law granting specific rights to individuals with a Californian citizenship, and regards their personal information with appropriate choices to either access, delete, or opt-out of their data being sold [@genesis].
+- **Payment Services Directive 2 (PSD2)**: Another EU regulation covering payment services and providers within the same EEA region, with the aim of enhancing security within financial operations [@ukfinance].
+
+### 3.2.1 Data encryption
+
+By encrypting data at both rest and transit (see [3.1.1](#311-aes) and [3.1.2](#312-rsa)) at both stationary (rest) and in transit reaffirms the "security by design" principle highlighted in GDPR and CCPA. The encryption protocols, along with storing that data, meet requirements such as Article 32 of GDPR [@intersoftconsulting] and Section 1798.100 of CCPA [@casetext].
+
+### 3.2.2 Key management
+
+Albeit simulated, the use of secure key management practices such as a Hardware Security Module (HSM) for robust key storage is vital for maintaining the integrity and confidentiality of keys. Stages such as key rotation can help in mitigating the associated risks of any compromised keys [@warner2022].
+
+### 3.2.3 Access control
 
 # 4 Assumptions taken
 
