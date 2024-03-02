@@ -826,13 +826,15 @@ The proposed cryptographic solution needs to comply with relevant data protectio
 
 ### 3.2.1 Data encryption
 
-By encrypting data at both rest and transit (see [3.1.1](#311-aes) and [3.1.2](#312-rsa)) at both stationary (rest) and in transit reaffirms the "security by design" principle highlighted in GDPR and CCPA. The encryption protocols, along with storing that data, meet requirements such as Article 32 of GDPR [@intersoftconsulting] and Section 1798.100 of CCPA [@casetext].
+By encrypting data at both rest and transit (see [3.1.1](#311-aes) and [3.1.2](#312-rsa)) at both stationary (rest) and in transit reaffirms the "security by design" principle highlighted in GDPR and CCPA. The encryption protocols, along with storing that data, meet requirements such as Article 32 of GDPR [@intersoftconsulting1] and Section 1798.100 of CCPA [@casetext1].
 
 ### 3.2.2 Key management
 
 Albeit simulated, the use of secure key management practices such as a Hardware Security Module (HSM) for robust key storage is vital for maintaining the integrity and confidentiality of keys. Stages such as key rotation can help in mitigating the associated risks of any compromised keys [@warner2022].
 
 ### 3.2.3 Access control
+
+The implementation of the role-based access control system (RBAC) alongside the encryption provided via AES and RSA further strengthens data protection by only allowing access to certain individuals based on their roles and permissions. The reason for this is to adhere to the principle of data "minimisation" outlined in Article 5 of GDPR [@intersoftconsulting2] and Section 1798.110 of CCPA [@casetext2]. By only allowing the most minimal privileges for the user, this allows users to still perform their jobs and functionality whilst also preventing unauthorised data access or any leaks.
 
 # 4 Assumptions taken
 
