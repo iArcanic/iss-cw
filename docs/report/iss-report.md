@@ -25,19 +25,17 @@ A current analysis of the cybersecurity practices which St. John's Clinic need t
 
 # 2 System description
 
-As this is a simulation, a lot of assumptions have been made. These are documented in [Appendix 4.1](#41-simulation-assumptions) as necessary. A read of this is highly encouraged, as it will provide insight and understanding around the following implementation.
+As this is a simulation, a lot of assumptions have been made. These are documented in [Appendix 4.1](#41-simulation-assumptions). A read of this is highly encouraged, as it will provide insight and understanding around the following implementation.
 
 ## 2.1 Authentication
 
 ### 2.1.1 User registration
 
-Under the assumption that any new users need to be registered securely with the system, the following function takes this into consideration.
+Any new users need to be registered securely with the system. The following function takes this into consideration. A `username` will help be a front-end unique identifier for users. A `password`, where the user provides their custom password. The `phone_number` parameter is just more placeholder registration data.
 
 ```python
 def register_user(username, password, phone_number)
 ```
-
-A `username` will help be a front-end unique identifier for users. A `password`, obviously, where the user provides their custom password which will be hashed. The `phone_number` parameter is just more placeholder registration data.
 
 To ensure that the username is unique, it reads the contents of the `USER_DB` (a user database JSON file) and checks whether the chosen username exists or not.
 
@@ -55,6 +53,7 @@ Since we want the authentication framework to be secure, a simulation of two fac
 ```python
 two_factor_code = generate_2fa_code()
 send_2fa_code(phone_number, two_factor_code)
+
 entered_code = input("Enter the 2FA code: ")
 
 if entered_code == two_factor_code:
@@ -125,6 +124,7 @@ Again, the two factor authentication functions are called, and if successful, a 
 ```python
 two_factor_code = generate_2fa_code()
 send_2fa_code(phone_number, two_factor_code)
+
 entered_code = input("Enter the 2FA code: ")
 
 if entered_code == two_factor_code:
@@ -137,7 +137,7 @@ if entered_code == two_factor_code:
 
 ### 2.1.3 Single Sign-on (SSO)
 
-For SSO, since homegrown SSO within the organisation was implemented, i.e, authentication with username and password (see [2.1.2](#212-user-login)), this SSO accounts for external identity authentication. The below function is a simulation of this – only requiring a `username`. The backend identity management of the third party company will be the responsible for performing the authentication and returning the result of it.
+For SSO, since homegrown SSO within the organisation was implemented (see [2.1.2](#212-user-login)), this SSO here accounts for external identity authentication. The below function is a simulation of this – only requiring a `username`. The backend identity management of the third party company will be the responsible for performing the authentication and returning the result of it.
 
 ```python
 def single_sign_on(username)
@@ -151,7 +151,7 @@ if username not in third_party_data:
                     f"Please register with the third party provider first.")
 ```
 
-The program flow continues if the above is not the case, and using the data content from the JSON file, it then makes a new user entry. The additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login) in the user database JSON file.
+Using the data content from the JSON file, it then makes a new user entry. The additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login) in the user database JSON file.
 
 ```python
 third_party_data = third_party_data[username]
@@ -162,9 +162,6 @@ if third_party_data:
         'username': username,
         'third_party_status': True
     }
-
-users_data[username] = new_user
-data_store(USER_DB, users_data)
 ```
 
 **NOTE**: for more detail on the full code implementation, see [Appendix 4.3.1.3](#4313-ssopy).
@@ -177,7 +174,7 @@ For the following sections, is is divided into both AES and RSA since two differ
 
 #### 2.2.1.1 AES
 
-For AES, the key generation process is very simple. Using the Python built-in `os` library, the `urandom` function generates a random binary string of 32 bytes (i.e. 256 bits). Since this uses random logic, it is safe to say that this is cryptographically secure.
+For AES, the key generation process uses the Python built-in `os` library, and the `urandom` function generates a random binary string of 32 bytes (i.e. 256 bits). Since random logic is used, it is safe to say that this is cryptographically secure.
 
 ```python
 def generate_aes_key():
@@ -185,11 +182,11 @@ def generate_aes_key():
     return key
 ```
 
-**NOTE**: For more detail on the full code implementation see [Appendix 4.3.2.1.1](#43211-key_genpy).
+**NOTE**: for more detail on the full code implementation see [Appendix 4.3.2.1.1](#43211-key_genpy).
 
 #### 2.2.1.2 RSA
 
-For RSA, there is a dedicated library for all RSA encryption functions. Using the `rsa.generate_private_key()` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` specifies the public exponent value used in the RSA algorithm with the value of `65537` is the default for most RSA keys. `key_size`, as the name suggests, is the size of the key in bits, so a value of `2048` is a standard size providing a reasonable balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library to perform the generation process. A `public_key` can also be derived from the generated private key.
+Using the `rsa.generate_private_key()` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` has the value of `65537`, which is the default for most RSA keys. `key_size` is the size of the key in bits, so a value of `2048` is a standard size providing a reasonable balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library. A `public_key` can also be derived from the generated private key.
 
 ```python
 def generate_key_pair():
@@ -307,7 +304,7 @@ Although there is no explicit function in the `rsa_manager.py` file for key retr
 
 The main issue is the conversion between the PEM string into a usable RSA key format from the JSON serialisation. The following two function address this.
 
-Below, this function takes in the RSA private key's `pem_string` as a parameter and utilises the cryptographic library's `.load_pem_private_key()` method to load the private key object. The `pem_string` is converted into bytes via `.encode()` since the function expects data in binary form, allowing any non-textual characters or special formatting within the PEM data to be preserved accurately. `password` being set to `None` means that there is no password protection applied, which is consistent with the fact that no encryption algorithm was applied in the initial PEM conversion. Again, `backend` uses the library's default backend.
+Below, this function takes in the RSA private key's `pem_string` as a parameter and utilises the cryptographic library's `.load_pem_private_key()` method to load the private key object. The `pem_string` is converted into bytes via `.encode()` since the function expects data in binary form, allowing any non-textual characters or special formatting within the PEM data to be preserved accurately. `password` being set to `None` means that there is no password protection applied, which is consistent with the fact that no encryption algorithm was applied in the initial PEM conversion.
 
 ```python
 def load_private_key_from_pem_string(pem_string):
@@ -359,7 +356,7 @@ for record in records_data["records"]:
         record["data"] = aes_data_decrypt(old_aes_key, record["data"])
 ```
 
-Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt()` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Using Python's `base64` library, it encodes the cipher text into Base64 binary data. The `.decode()` function will turn this into a string from bytes. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
+Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt()` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
 
 ```python
 if record["owner_id"] == user_id:
@@ -374,7 +371,7 @@ if record["owner_id"] == user_id:
 
 #### 2.2.4.2 RSA
 
-For RSA, there is no explicit key expiry implemented. This is because each time the user logins, both their RSA public and private keys are dynamically refreshed and re-generated (see [2.1.2](#212-user-login)), so no key rotation is required.
+For RSA, there is no explicit key expiry implemented. This is because each time the user logins, both their RSA public and private keys are dynamically re-generated so no key rotation is required.
 
 ## 2.3 Record management
 
@@ -395,7 +392,7 @@ if len(key) != 32:
     raise ValueError("AES key must be 32 bytes long for AES-256")
 ```
 
-A new initialisation vector is created using the `os` Python library to create a random to create a random binary string of 16 bytes (or 128 bits). An initialisation vector ensures cryptographic randomness and true variance in the different cipher texts generated, so each encrypted piece of data is truly unique.
+A new initialisation vector is created using the `os` Python library to create a random to create a random binary string of 16 bytes (or 128 bits). An initialisation vector ensures cryptographic randomness and true variance in the different cipher texts generated.
 
 ```python
 iv = os.urandom(16)
@@ -410,19 +407,19 @@ cipher = Cipher(
     backend=default_backend())
 ```
 
-A new encryptor is created from the previous initialised cipher object. This will perform the necessary encryption for the given `data`.
+A new encryptor is created from the cipher object. This will perform the necessary encryption for the given `data`.
 
 ```python
 encryptor = cipher.encryptor()
 ```
 
-To actually create the cipher text, the newly created `encryptor` will take the plain text input of `data` and returns the corresponding cipher text with the chosen encryption settings from the `cipher` variable. The `encryptor.finalize()` method finalises the process, ensuring that any remaining data within the internal bugger of the `encryptor` is also processed and included within the cipher text output.
+To create the cipher text, the `encryptor` will take the plain text input of `data` and returns the corresponding cipher text with the chosen encryption settings from the `cipher` variable. The `encryptor.finalize()` method finalises the process, ensuring that any remaining data within the internal buffer of the `encryptor` is included within the cipher text output.
 
 ```python
 ciphertext = encryptor.update(data) + encryptor.finalize()
 ```
 
-The final, true form of the cipher text is returned, as a concatenation of the initialisation vector and the newly generated cipher text. This will be required in the decryption process (see [2.3.2](#232-decryption)).
+The final cipher text is returned as a concatenation of the initialisation vector and the newly generated cipher text. This will be required in the decryption process (see [2.3.2](#232-decryption)).
 
 ```python
 return iv + ciphertext
@@ -432,19 +429,19 @@ return iv + ciphertext
 
 ### 2.3.2 Decryption
 
-Since AES symmetric encryption was used, the relevant decryption operation has to be performed to convert the cipher text output to its original readable plain text input. This function again, takes the same arguments as `aes_encrypt`.
+The relevant AES decryption operation has to be performed to convert the cipher text output to its original readable plain text input. This function again, takes the same arguments as `aes_encrypt()`.
 
 ```python
 def aes_data_decrypt(aes_key, data)
 ```
 
-As the `data` parameter will take the value of serialised cipher text from the JSON object, it needs to be unserialised in the same way, and that is again by decoding via Base64. This ensures that the cipher text is in its original form.
+As the `data` parameter will take the value of serialised cipher text from the JSON object, it needs to be unserialised in the same way, and that is again by decoding via Base64.
 
 ```python
 ciphertext = base64.b64decode(data)
 ```
 
-Since in `aes_encrypt` the final cipher text was a combination of the initialisation vector and the cipher text components (see [2.3.1](#231-encryption)), using string splicing, the cipher text is appropriately split up in half, of length 16 characters – the size of the initialisation vector and the actual cipher text are both 16 (see [2.3.1](#231-encryption)), so in total, 32 characters.
+Since in `aes_encrypt()` the final cipher text was a combination of the initialisation vector and the cipher text components (see [2.3.1](#231-encryption)), using string splicing, the cipher text is appropriately split up in half, of length 16 characters – the size of the initialisation vector and the actual cipher text are both 16 (see [2.3.1](#231-encryption)).
 
 ```python
 iv = ciphertext[:16]
@@ -488,29 +485,13 @@ return decrypted_data.decode()
 
 The Role Based Access Control (RBAC), is a method of access control where users are granted certain privileges or access to specific system properties based on the permissions they have. Access decisions are solely dependent on the user's permissions rather than the actual identity of the users themselves. This approach allows for easier access management since permissions can be quickly assigned or revoked by administrators.
 
-The RBAC for this simulation has been implemented as a Python wrapper function or decorator. For instance, if there was a decorator called `function_x` and a normal function called `function_y`, if `function_x` is wrapped around `function_y`, each time `function_y` is called and executed `function_x` will also be called and executed (either before or after, depending on how it is wrapped). This allows for additional functionality and flexibility. The decisioning for this implementation is that the RBAC needs to be called each time a user attempts to perform a record operation (see [2.3.4](#234-store-records) and [2.3.5](#235-retrieve-records)) – they are only able to do so if they have the necessary permissions.
+The RBAC for this simulation has been implemented as a Python wrapper function or decorator. This allows for additional functionality and flexibility. The decisioning for this implementation is that the RBAC needs to be called each time a user attempts to perform a record operation (see [2.3.4](#234-store-records) and [2.3.5](#235-retrieve-records)) – they are only able to do so if they have the necessary permissions.
 
-A wrapper function is defined like so. The `role_check_decorator` takes in a `func` parameter, meaning it takes in another whole function as a parameter. The inner `wrapper` function either modifies or extends the behavior of the function is is called upon, taking in `owner_id` (owner of the record, see [2.3.4](#234-store-records)), `*args` and `**kwargs` to accept any number of extra positional arguments.
+A wrapper function is defined like so. The `role_check_decorator()` takes in a `func` parameter, meaning it takes in another whole function as a parameter. The inner `wrapper()` function either modifies or extends the behavior of the function is is called upon, taking in `owner_id` (owner of the record), `*args` and `**kwargs` to accept any number of extra positional arguments.
 
 ```python
 def role_check_decorator(func):
     def wrapper(owner_id, *args, **kwargs):
-```
-
-This `try` `catch` block attempts to open and capture data of the necessary JSON files, those being `USER_ROLES_DB` (a database containing the user IDs and any associated roles) and `ROLE_PERMISSIONS_DB` (a database containing information on all available system roles). If there is an error with this operation, then terminate the program.
-
-```python
-try:
-    with open(USER_ROLES_DB, 'r') as user_roles_file:
-        user_roles_data = json.load(user_roles_file)
-
-    with open(ROLE_PERMISSIONS_DB, 'r') as role_permissions_file:
-        role_permissions_data = json.load(role_permissions_file)
-
-except FileNotFoundError:
-    print(f"role_check.role_check_decorator -> {USER_ROLES_DB} database or {ROLE_PERMISSIONS_DB} database not "
-            f"found.")
-    return
 ```
 
 To start the role access logic, first, the owner of the record or rather, whichever user is attempting to perform a record operation should be first checked to see if they exist and have roles allocated to them. If this is the case, then store all the available user roles into a variable.
@@ -522,7 +503,7 @@ else:
     print(f"role_check.role_check_decorator -> User with ID {owner_id} not found in user roles data.")
 ```
 
-By looping through the user roles database, first check if role actually exists within the database. If so, then from the function that the decorator function is wrapped around, gets the `permission` parameter with `kwargs.get()`. As the permissions in the role permissions database are stored in capital letters, the `.upper()` ensures that it is in the same case regardless of the parameter value.
+By looping through the user roles database, it first checks if the role actually exists. If so, then get the `permission` parameter with `kwargs.get()` from the wrapped function. As the permissions in the role permissions database are stored in capital letters, the `.upper()` ensures that it is in the same case regardless of the parameter value.
 
 ```python
 if owner_id in user_roles_data:
@@ -549,31 +530,18 @@ if role in role_permissions_data:
                             f"does not have required permissions for this operation.")
 ```
 
-Finally, once all the logic has been performed, then the `wrapper` function needs to be returned as this allows the logic within the `wrapper` function to be executed if any function is decorated with it.
-
-```python
-return wrapper
-```
-
-To call this wrapper function upon other functions, the syntax is like so.
-
-```python
-@role_check_decorator
-def record_store(...)
-```
-
 **NOTE**: for more detail on the full code implementation, see [4.3.3.3](#4333-role_checkpy).
 
 ### 2.3.4 Store records
 
-To simulate users being able to interact with the various clinic's services and systems, being able to write and/or edit data is an important operation to implement. The function below is annotated with the `role_check_decorator` (see [2.3.3](#233-role-based-access-control-rbac)), so the user's role is checked each time they attempt to execute this function. `owner_id` is the ID of the user writing the record (the record owner), `data` being the actual data to be stored, `metadata` is any additional data passed in as a dictionary, `permission` which is the user's permission, `decrypted_data` for the data received from the RSA data transmission (see [2.4](#24-data-transmission)), and finally `individual_access` if the user wants the record to be retrieved by specific users only (see [2.5.1](#2351-individual-access-record-retrieval)) – default to `None` (equivalent to `null`), since the user may not want to do this at all.
+To simulate users being able to interact with the various clinic's services and systems, being able to write and/or edit data is an important operation to implement. The function below is annotated with the `role_check_decorator` (see [2.3.3](#233-role-based-access-control-rbac)), so the user's role is checked each time they attempt to execute this function. `owner_id` is the ID of the user writing the record (the record owner), `data` being the actual data to be stored, `metadata` is any additional data passed in as a dictionary, `permission` which is the user's permission, `decrypted_data` for the data received from the RSA data transmission (see [2.4](#24-data-transmission)), and finally `individual_access` if the user wants the record to be retrieved by specific users only (see [2.5.1](#2351-individual-access-record-retrieval)) – defaulted to `None` initially.
 
 ```python
 @role_check_decorator
 def record_store(owner_id, data, meta_data, permission, decrypted_data, individual_access=None):
 ```
 
-First, the AES key assigned to the user is retrieved, by passing in the `owner_id` as the parameter for the `aes_encrypt` method. `json_data` is the JSON file dump of the decrypted data from the RSA data transmission (see [2.4](#24-data-transmission)). `ciphertext` obviously being the encrypted form of the plaintext, with the `json_data` converted into bytes first via `.encode()`. The cipher text, as mentioned previously, has to be serialised into a specific Base64 format, i.e. to a Base64 string to be suitable for JSON storage.
+First, the AES key assigned to the user is retrieved, by passing in the `owner_id` as the parameter for the `aes_encrypt()` method. `json_data` is the JSON file dump of the decrypted data from the RSA data transmission (see [2.4](#24-data-transmission)). `ciphertext` being the encrypted form of the plaintext, which needs to be serialised to be suitable for JSON storage.
 
 ```python
 key = retrieve_key(owner_id)
@@ -582,7 +550,7 @@ ciphertext = aes_encrypt(key, json_data.encode())
 serialized_ciphertext = base64.b64encode(ciphertext).decode()
 ```
 
-All the components of the JSON object are brought together via a dictionary mapping. Using the `uuid` Python library, just like for user registration (see [2.1.1](#211-user-registration)), a random unique GUID is generated. This JSON object will be stored in the `"records"` JSON collection.
+All the components of the JSON object are brought together via a dictionary mapping. Using the `uuid` Python library a random unique identifier is generated. This JSON object will be stored in the `"records"` JSON collection.
 
 ```python
 record_id = str(uuid.uuid4())
@@ -597,18 +565,11 @@ json_data["records"].append(
     })
 ```
 
-After the data has been encrypted and modified for JSON, it is then written to the correct file (a records database). The `record_id` is returned for reading records (see [2.3.5](#235-retrieve-records)) in the future.
-
-```python
-json.dump(json_data, file, indent=2)
-return record_id
-```
-
 **NOTE**: for more detail on the full code implementation, see [4.3.3.4](#4334-record_storepy).
 
 ### 2.3.5 Retrieve records
 
-To simulate data being read across the multiple clinic's services, the counterpart function of `record_store` is implemented. Again, like with `record_store`, this function is annotated with the wrapper `role_check_decorator` since the RBAC has to be called to check user permissions if this operation is attempted. A record is retrieved based on the `owner_id`, the `patient_id` present within the `metadata` field of the record's JSON object, as well as the user's permission that the `role_check_decorator` uses.
+To simulate data being read across the multiple clinic's services, the counterpart function of `record_store` is implemented. Again, like with `record_store`, this function is annotated with the wrapper `role_check_decorator()` since the RBAC has to be called to check user permissions if this operation is attempted. A record is retrieved based on the `owner_id`, the `patient_id` present within the `metadata` field of the record's JSON object, as well as the user's permission that the `role_check_decorator` uses.
 
 ```python
 @role_check_decorator
@@ -650,7 +611,7 @@ return records_list
 
 Another additional requirement, especially for third party data being stored in the company, is the ability for owners to delegate access to specific users of the clinic, since it is their intellectual property after all.
 
-For this, an additional was implemented to address this. This `record_retrieve_by_id` function allows the user to read a record based on its ID, and the `user_id` being the ID of the user trying to access this record. Note that the `role_check_decorator` has not be wrapped around this function since the logic here is different the regular role check.
+An additional function was required, so therefore, the `record_retrieve_by_id()` function allows the user to read a record based on its ID, and the `user_id` being the ID of the user trying to access this record. Note that the `role_check_decorator()` has not be wrapped around this function since the logic here is different the regular role check.
 
 ```python
 def record_retrieve_by_id(record_id, user_id)
@@ -662,7 +623,7 @@ To get all matching records, this line filters a list of records based on the co
 record = list(filter(lambda x: x["record_id"] == record_id, records_data["records"]))[0]
 ```
 
-The `if` statement here checks to see whether the ID of the user is in the `"individual_access"` collection of the matching record JSON object, i.e. if the user calling this function has been given access for that record. If not, then a `PermissionError` like in the `role_check_decorator` (see [2.3.3](#233-role-based-access-control-rbac)) wrapper function is thrown.
+The `if` statement here checks to see whether the ID of the user is in the `"individual_access"` collection of the matching record JSON object, i.e. if the user calling this function has been given access for that record. If not, then a `PermissionError` is raised.
 
 ```python
 if user_id in record["individual_access"]:
@@ -688,7 +649,7 @@ return record
 
 ## 2.4 Data transmission
 
-Data needs to be stored and read across the various systems in the clinic. During the transmission, this data needs to remain secure and unreadable, so even if an unauthorised third party either attempts to access or has access to the data, it is presented to them in an unreadable format. The algorithm of choice for this is RSA asymmetric key encryption.
+Data needs to be stored and read across the various systems in the clinic. During the transmission, this data needs to remain secure and unreadable, so even if an unauthorised third party has access to the data, it is presented to them in an unreadable format. The algorithm of choice for this is RSA asymmetric key encryption.
 
 ### 2.4.1 Encryption
 
@@ -715,16 +676,17 @@ ciphertext = public_key.encrypt(
             label=None
         )
     )
-    return ciphertext
+
+return ciphertext
 ```
 
 **NOTE**: for more detail on the full code implementation, see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.4.2 Decryption
 
-As implemented in `role_check_decorator`, the RSA decryption process has also been implemented as a wrapper.
+The RSA decryption process has also been implemented as a wrapper.
 
-Firstly, starting with the `rsa_decrypt` function, this is essentially the same but the opposite counter part to the encryption process. This time however, it uses the user's private key that they have been assigned with as well as the `.decrypt()` method of the `private_key`. At the end however, the `plaintext` is recoded back to string in `utf-8`.
+Firstly, starting with the `rsa_decrypt()` function, it uses the user's private key and the `.decrypt()` method of the `private_key`. At the end, the `plaintext` is decoded back to a string to be readable.
 
 ```python
 def rsa_decrypt(ciphertext, private_key_pem):
@@ -740,14 +702,14 @@ def rsa_decrypt(ciphertext, private_key_pem):
     return plaintext.decode("utf-8")
 ```
 
-Similar to the `role_check_decorator`, this wrapper function takes in a function as a parameter. The inner function additionally accepts the record owner's ID as well as the `data`, which is the cipher text in this case.
+This wrapper function takes in a function as a parameter. The inner function additionally accepts the record owner's ID as well as the `data`, which is the cipher text in this case.
 
 ```python
 def rsa_decrypt_data_decorator(func):
     def wrapper(owner_id, data, *args, **kwargs):
 ```
 
-All the data from the RSA key JSON database (or RSA HSM) is looped through to find the correct record based on the `user_id`. From this record, the PEM format of the RSA private key is obtained.
+All the data from the RSA HSM is looped through to find the correct record based on the `user_id`. From this record, the PEM format of the RSA private key is obtained.
 
 ```python
 rsa_hsm_data = data_read("data/rsa_hsm.json")
@@ -756,13 +718,13 @@ rsa_hsm_data = data_read("data/rsa_hsm.json")
             private_key_pem = key_info["key"]
 ```
 
-Using the previously mentioned `rsa_decrypt()` function, it decrypts the transmission data by passing in the cipher text (through `data`) and the PEM of the RSA private key, which gets converted into a usable key object.
+It then decrypts the transmission data via `rsa_decrypt()` by passing in the cipher text (through `data`) and the PEM of the RSA private key (that is converted into a usable key format).
 
 ```python
 decrypted_data = rsa_decrypt(data, private_key_pem)
 ```
 
-At the end, the original function's arguments are returned back, by passing the new values that the parameters take. The parameters with `kwargs.get(...)` means that the parameters take the value of the decorated function's values. The other parameters without this take on new modified variables from the wrapper.
+At the end, the original function's arguments are returned back, by passing the new values that the parameters take.
 
 ```python
 return func(
