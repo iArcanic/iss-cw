@@ -254,17 +254,28 @@ with open(HSM_DB, 'w') as file:
 
 #### 2.2.2.2 RSA
 
-The function that takes care of storing the RSA keys is the same as in [2.2.2.1](#2221-aes). This function below, `replace_or_insert_key_from_file()` takes in the `user_id` of the user which the key is stored under, `new_key` being the new RSA generated key from the previous `generate_key_pair()` function, and the `file_path` to the RSA HSM.
+The function below stores the user's RSA key under their ID.
+
+- **`user_id`**: ID of the user to store the RSA key under.
+- **`key`**: the actual RSA key to be stored.
+- **`file_path`**: the path to the RSA HSM JSON file.
 
 ```python
-def replace_or_insert_key_from_file(user_id, new_key, file_path="data/rsa_hsm.json")
+def replace_or_insert_key_from_file
+(
+    user_id,
+    new_key,
+    file_path="data/rsa_hsm.json"
+)
 ```
 
 The logic of this function is exactly similar to the AES key store function.
 
-However, one thing to note, is that since the `generate_key_pair()` function returns a the RSA public and private keys in a usable format, i.e. in bytes, it cannot be stored into JSON unless serialised. But in this instance, the RSA keys do not have a callable `.hex()` function so the Python RSA cryptographic library has its own specialised serialisation functions for this. Instead of bytes, it is converted into a PEM string format. The two functions below take this into account and perform the conversion.
+However, the raw RSA key object in bytes cannot be stored in the JSON document, so it needs to be converted into a PEM string. The following two functions perform this conversion, one for each type of RSA key (public and private).
 
-Firstly for the RSA private key, using the `.private_bytes()` function, it takes a couple of arguments. The `encoding` parameter explicitly states that a PEM encoder should be used for a PEM output. The `format` parameter specifies the format for the private key, which in this case is `PKCS8` – which is the widely used standard. Finally the `encryption_algorithm` parameter states that there should be no encryption applied to the RSA private key when converted to PEM since the simulated HSM is assumed to automatically encrypt the keys anyway (see [Appendix 4.1.4](#414-external-dependencies)). At the end, it decodes the `pem_format` variable from bytes to string so that it can be stored in JSON.
+- **`encoding`**: specifies that the PEM encoder should be used.
+- **`format`**: format for the private key, with `PKCS8` being the widely used standard.
+- **`encryption_algorithm`**: the encryption algorithm, set to `NoEncryption` since simulated HSM takes care of this
 
 ```python
 def pem_convert_private_key(key):
@@ -274,11 +285,7 @@ def pem_convert_private_key(key):
         encryption_algorithm=serialization.NoEncryption()
     )
     return pem_format.decode('utf-8')
-```
 
-The same applies when converting the RSA public key to a PEM format, but this time using the `.private_bytes()` method.
-
-```python
 def pem_convert_public_key(key):
     pem_format = key.public_bytes(
         encoding=serialization.Encoding.PEM,
@@ -286,8 +293,6 @@ def pem_convert_public_key(key):
     )
     return pem_format.decode('utf-8')
 ```
-
-**NOTE**: for more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.3 Key retrieval
 
