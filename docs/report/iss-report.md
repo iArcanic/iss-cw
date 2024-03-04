@@ -27,17 +27,23 @@ A current analysis of the cybersecurity practices which St. John's Clinic need t
 
 As this is a simulation, a lot of assumptions have been made. These are documented in [Appendix 4.1](#41-simulation-assumptions). A read of this is highly encouraged, as it will provide insight and understanding around the following implementation.
 
+For the full source code implementation for each of the following sections, please also refer to [Appendix 4.3](#43-implementation-source-code).
+
 ## 2.1 Authentication
 
 ### 2.1.1 User registration
 
-Any new users need to be registered securely with the system. The following function takes this into consideration. A `username` will help be a front-end unique identifier for users. A `password`, where the user provides their custom password. The `phone_number` parameter is just more placeholder registration data.
+New users must securely register with the system. The following function facilitates this process.
+
+- **`username`**: a unique identifier for users on the front-end.
+- **`password`**: custom password provided by the user.
+- **`phone_number`**: placeholder registration data.
 
 ```python
 def register_user(username, password, phone_number)
 ```
 
-To ensure that the username is unique, it reads the contents of the `USER_DB` (a user database JSON file) and checks whether the chosen username exists or not.
+User registration is initiated upon successful verification of provided details, with appropriate error messages returned in case of validation issues.
 
 ```python
 users_data = data_read_return_empty_if_not_found(USER_DB)
@@ -48,7 +54,7 @@ if username in users_data:
     return
 ```
 
-Since we want the authentication framework to be secure, a simulation of two factor authentication is implemented. The two functions that are called in the code below, `generate_2fa_code()` and `send_2fa_code()`, mimic the process. One generates the code and the other "sends" that code to the user's phone. In this case, there is no "sending", so a simple on-screen message is returned. The user then needs to simply repeat this code to the program console, and depending upon the code verification, the function flow continues.
+Registration also performs two factor authentication, the below code generates a 2FA code, sends it to the provided phone number (simulated by displaying it on the console), prompts the user to enter the code, and verifies it against the generated code. This ensures an additional later of security during user registration.
 
 ```python
 two_factor_code = generate_2fa_code()
@@ -63,7 +69,7 @@ else:
     return
 ```
 
-Preparation to store the data in the database takes place here. First using the `uuid` library allows the generation of a UUID 4 string. A salt is generated for the hashing of the password using the `bcrypt` library. Note that using `.encode('utf-8')` allows for the password to be converted to bytes first.
+Upon successful registration, the user's details, including a cryptographic salt, a unique user ID and a securely hashed password using the Python `bcrypt` library, are stored in the database for increased security.
 
 ```python
 user_id = str(uuid.uuid4())
@@ -71,7 +77,7 @@ salt = bcrypt.gensalt()
 hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
 ```
 
-Finally, a new JSON object is created first as a Python dictionary. Note that the `hashed_password` and `salt` all have `.decode('utf-8')`, to allow them to be converted from bytes to strings. This is called JSON serialisation, since JSON does not support the storage of pure bytes. This JSON object is then stored.
+User details are stored in the database as a JSON document.
 
 ```python
 new_user = {
@@ -85,8 +91,6 @@ new_user = {
 users_data[username] = new_user
 data_store(USER_DB, users_data)
 ```
-
-**NOTE**: for more detail on the full code implementation see [Appendix 4.3.1.1](#4311-registerpy).
 
 ### 2.1.2 User login
 
