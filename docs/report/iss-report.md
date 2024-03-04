@@ -446,57 +446,47 @@ return iv + ciphertext
 
 ### 2.3.2 Decryption
 
-The relevant AES decryption operation has to be performed to convert the cipher text output to its original readable plain text input. This function again, takes the same arguments as `aes_encrypt()`.
+To convert the cipher text back into a plain text readable form, the decryption process has to be performed, and this function considers this.
+
+- **`aes_key`**: the user's generated AES key.
+- **`data`**: the plaintext data to decrypt
 
 ```python
 def aes_data_decrypt(aes_key, data)
 ```
 
-As the `data` parameter will take the value of serialised cipher text from the JSON object, it needs to be unserialised in the same way, and that is again by decoding via Base64.
-
-```python
-ciphertext = base64.b64decode(data)
-```
-
-Since in `aes_encrypt()` the final cipher text was a combination of the initialisation vector and the cipher text components (see [2.3.1](#231-encryption)), using string splicing, the cipher text is appropriately split up in half, of length 16 characters – the size of the initialisation vector and the actual cipher text are both 16 (see [2.3.1](#231-encryption)).
+In [2.3.1](#231-encryption) the final cipher text was a combination of the initialisation vector and the cipher text components. Using string splicing, the cipher text is split up.
 
 ```python
 iv = ciphertext[:16]
 actual_ciphertext = ciphertext[16:]
 ```
 
-Again, as explained in [2.3.1](#231-encryption), the `aes_key` is checked to see if it is of the correct length to ensure that malformed data does not traverse the system.
+The user's AES key is checked to see if its of the correct length, and also verifies that only keys issues by the crypto system are used.
 
 ```python
 if len(aes_key) != 32:
     raise ValueError("AES key must be 32 bytes long for AES-256")
 ```
 
-Like before in [2.3.1](#231-encryption), a cipher object must be formed again using the exact same parameters and values.
+A cipher object must be formed again using the exact same parameters and values as in [2.3.1](#231-encryption). This is to form a `decryptor` object.
 
 ```python
 cipher = Cipher(algorithms.AES(aes_key), modes.CFB(iv), backend=default_backend())
-```
-
-This time however, a `decryptor` is made since the required operation is decryption. This via the `.decryptor()` method of the cipher object.
-
-```python
 decryptor = cipher.decryptor()
 ```
 
-Using this `decryptor` and the decryption configuration from the `cipher` variable, the decryption process is performed in the exact same way as the encryption process, but with the `actual_ciphertext` spliced component of the passed in cipher text.
+The `decryptor` performs the decryption process by taking each character in its internal buffer and converting that to its relevant plaintext counterpart.
 
 ```python
 decrypted_data = decryptor.update(actual_ciphertext) + decryptor.finalize()
 ```
 
-Finally, as the `decryptor` returns the plain text in bytes, using `decode()`, it converts this back into a string, so that it can be read.
+Finally, as the `decryptor` returns the plain text in bytes, and this is converted to a string to be read.
 
 ```python
 return decrypted_data.decode()
 ```
-
-**NOTE**: for more detail on the full code implementation, see [4.3.3.2](#4332-decryptionpy).
 
 ### 2.3.3 Role Based Access Control (RBAC)
 
