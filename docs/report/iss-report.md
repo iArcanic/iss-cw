@@ -298,15 +298,15 @@ def pem_convert_public_key(key):
 
 #### 2.2.3.1 AES
 
-The stored AES keys need to be retrieved for any symmetric encryption processes for the relevant user. This allows for the same key to be used across all the various clinic systems.
+The stored AES keys need to be retrieved for any symmetric encryption and decryption processes for the relevant user, and the following function considers this.
 
-This function will accept a `user_id` parameter to return the key for the given user.
+- **`user_id`**: ID of the user under which the AES key is stored under.
 
 ```python
 def retrieve_key(user_id)
 ```
 
-For this, a simple file read takes place, iterating through the JSON file via a `for` loop. `key_entries` uses a `data_read()` utility function to capture all the data from the JSON file. By looping through, it checks for the matching `user_id` and then returns the key in a usable format, i.e. converting it from the stored hex into its original bytes form.
+By iterating through the database entries, it tries to find the corresponding key entry that matches the given `user_id`. It then returns the AES key in a usable format.
 
 ```python
 key_entries = data_read(HSM_DB)
@@ -315,8 +315,6 @@ for entry in key_entries["aes_keys"]:
     if entry["user_id"] == user_id:
         return bytes.fromhex(entry["key"])
 ```
-
-**NOTE**: for more detail on the full code implementation see [4.3.2.1.3](#43213-key_retrievepy).
 
 #### 2.2.3.2 RSA
 
@@ -346,8 +344,6 @@ def load_public_key_from_pem_string(pem_string):
     )
     return public_key
 ```
-
-**NOTE**: For more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
 
 ### 2.2.4 Key expiry rotation
 
