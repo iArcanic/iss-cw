@@ -182,21 +182,17 @@ data_store(USER_DB, users_data)
 
 ## 2.2 Key management
 
-For the following sections, is is divided into both AES and RSA since two different encryption algorithms were used. The logic may be slightly similar but differ in implementation details.
-
 ### 2.2.1 Key generation
 
 #### 2.2.1.1 AES
 
-For AES, the key generation process uses the Python built-in `os` library, and the `urandom` function generates a random binary string of 32 bytes (i.e. 256 bits). Since random logic is used, it is safe to say that this is cryptographically secure.
+The following function generates a random AES key for symmetric encryption and decryption. With `os.urandom(32)`, the key is 32 bytes (256 bits) in length, allowing for a good balance between both security and performance.
 
 ```python
 def generate_aes_key():
     key = os.urandom(32)
     return key
 ```
-
-**NOTE**: for more detail on the full code implementation see [Appendix 4.3.2.1.1](#43211-key_genpy).
 
 #### 2.2.1.2 RSA
 
