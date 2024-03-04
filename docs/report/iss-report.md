@@ -5,7 +5,6 @@ bibliography: docs/report/references.bib
 toc: true
 toc-title: Table of Contents
 toc-depth: 5
-geometry: "left=1.25cm, right=1.25cm, top=1.25cm, bottom=1.25cm"
 csl: docs/report/harvard-imperial-college-london.csl
 ---
 
@@ -39,58 +38,23 @@ New users must securely register with the system. The following function facilit
 - **`password`**: custom password provided by the user.
 - **`phone_number`**: placeholder registration data.
 
-```python
-def register_user(username, password, phone_number)
-```
+![](images/code-snippets/user-registration-1.png)
 
 User registration is initiated upon successful verification of provided details, with appropriate error messages returned in case of validation issues.
 
-```python
-users_data = data_read_return_empty_if_not_found(USER_DB)
-
-if username in users_data:
-    print(f"register.register_user -> Username '{username}' already exists. "
-            f"Please choose a different username.")
-    return
-```
+![](images/code-snippets/user-registration-2.png)
 
 Registration also performs two factor authentication, the below code generates a 2FA code, sends it to the provided phone number (simulated by displaying it on the console), prompts the user to enter the code, and verifies it against the generated code. This ensures an additional layer of security during user registration.
 
-```python
-two_factor_code = generate_2fa_code()
-send_2fa_code(phone_number, two_factor_code)
-
-entered_code = input("Enter the 2FA code: ")
-
-if entered_code == two_factor_code:
-    print("register.register_user -> 2FA verification successful.")
-else:
-    print("register.register_user -> 2FA verification failed. Registration aborted.")
-    return
-```
+![](images/code-snippets/user-registration-3.png)
 
 Upon successful registration, the user's details, including a cryptographic salt, a unique user ID and a securely hashed password using the Python `bcrypt` library, are stored in the database for increased security.
 
-```python
-user_id = str(uuid.uuid4())
-salt = bcrypt.gensalt()
-hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-```
+![](images/code-snippets/user-registration-4.png)
 
 User details are stored in the database as a JSON document.
 
-```python
-new_user = {
-    'user_id': user_id,
-    'username': username,
-    'hashed_password': hashed_password.decode('utf-8'),
-    'salt': salt.decode('utf-8'),
-    'phone_number': phone_number
-}
-
-users_data[username] = new_user
-data_store(USER_DB, users_data)
-```
+![](images/code-snippets/user-registration-5.png)
 
 ### 2.1.2 User login
 
