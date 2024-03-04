@@ -347,22 +347,22 @@ def load_public_key_from_pem_string(pem_string):
 
 #### 2.2.4.1 AES
 
-The AES keys stored in the HSM need to be rotated and expired periodically in order to be cryptographically secure. In the event the HSM is breached and access to the AES key is gained, since the key has been rotated, the data still cannot be decrypted regardless.
+The AES keys stored in the HSM need to be rotated and expired periodically in order to be cryptographically secure. In the event the HSM is breached and access to the AES key is gained, since the key has been rotated, the data still cannot be decrypted regardless. Therefore, the following function implements this.
 
-This function needs to know the correct `user_id` in order to find the AES key of the user to expire.
+- **`user_id`**: ID of the user under to find and expire the AES key.
 
 ```python
 def expire_aes_key(user_id)
 ```
 
-By using the previous `retrieve_key()` function in [2.2.3.1](#2231-aes), it gets the user's current AES key, and labels in a variable called `old_aes_key`, since the key will expire soon. Now using the `generate_aes_key()` function from [2.2.1.1](#2211-aes), a new AES key is generated that will replace the previous one.
+The current AES key is first retrieved based on the user's ID. A new key is then generated.
 
 ```python
 old_aes_key = retrieve_key(user_id)
 new_aes_key = generate_aes_key()
 ```
 
-By looping through a JSON file containing data used by the various clinical systems, i.e. records (see [2.3](#23-record-management)), the `if` statement helps to determine the right record based on the `user_id`. By getting the data from the `data` field of the JSON object, the `old_aes_key` is used to decrypt and replace the contents of the field with its original plaintext form using the `aes_data_decrypt()` function (see [2.3.2](#232-decryption)).
+Looping through the JSON data, the user's record (see [Appendix 4.1.3](#413-data)) is fetched and the cipher text is decrypted to plaintext.
 
 ```python
 for record in records_data["records"]:
@@ -370,7 +370,7 @@ for record in records_data["records"]:
         record["data"] = aes_data_decrypt(old_aes_key, record["data"])
 ```
 
-Now that the data is in its plaintext form, the `new_aes_key` can be used to encrypt the plaintext into a new cipher text form using the `aes_encrypt()` function (see [2.3.1](#231-encryption)). Note that using the `.encode()` method, the plaintext has to be converted into bytes. However, a problem arises in that raw bytes cannot be stored in JSON file so serialisation is required. Finally, the `data` attribute of the `record` JSON object is overwritten with the new cipher text.
+Since the data is in plaintext, the the `new_aes_key` can be used to encrypt the plaintext and overwrite the record's old cipher text.
 
 ```python
 if record["owner_id"] == user_id:
@@ -381,11 +381,9 @@ if record["owner_id"] == user_id:
     record["data"] = serialized_ciphertext
 ```
 
-**NOTE**: for more detail on the full code implementation, see [4.3.2.1.4](#43214-key_expirepy).
-
 #### 2.2.4.2 RSA
 
-For RSA, there is no explicit key expiry implemented. This is because each time the user logins, both their RSA public and private keys are dynamically re-generated so no key rotation is required.
+There is no key expiry implemented for RSA keys. This is because each time the user logins, both their RSA public and private keys are dynamically re-generated so no key rotation is required.
 
 ## 2.3 Record management
 
