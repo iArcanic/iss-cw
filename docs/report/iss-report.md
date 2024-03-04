@@ -144,13 +144,15 @@ if entered_code == two_factor_code:
 
 ### 2.1.3 Single Sign-on (SSO)
 
-For SSO, since homegrown SSO within the organisation was implemented (see [2.1.2](#212-user-login)), this SSO here accounts for external identity authentication. The below function is a simulation of this – only requiring a `username`. The backend identity management of the third party company will be the responsible for performing the authentication and returning the result of it.
+[2.1.2](#212-user-login) considered homegrown SSO, i.e. a username and password based authentication within the system. The SSO here accounts for external identity authentication, where a third party will be responsible for performing the authentication and returning the result of it.
+
+- **`username`**: unique identifier of the third party SSO system.
 
 ```python
 def single_sign_on(username)
 ```
 
-The program flow is terminated via a `ValueError` if the username isn't found in the user database of the third party company.
+Validation checks are performed, returning appropriate error messages where necessary.
 
 ```python
 if username not in third_party_data:
@@ -158,7 +160,7 @@ if username not in third_party_data:
                     f"Please register with the third party provider first.")
 ```
 
-Using the data content from the JSON file, it then makes a new user entry. The additional field, `third_party_status`, is important to note, as it helps to differentiate between a homegrown (i.e. internal within the company) SSO and an external SSO (i.e. external, such as Google or Facebook login) in the user database JSON file.
+The user's data from the third party's database is retrieved to check whether the user is registered with the third party. If so, a new JSON document, specifically for external SSO, is created.
 
 ```python
 third_party_data = third_party_data[username]
@@ -171,7 +173,12 @@ if third_party_data:
     }
 ```
 
-**NOTE**: for more detail on the full code implementation, see [Appendix 4.3.1.3](#4313-ssopy).
+This is then stored within the healthcare provider's user database.
+
+```python
+users_data[username] = new_user
+data_store(USER_DB, users_data)
+```
 
 ## 2.2 Key management
 
