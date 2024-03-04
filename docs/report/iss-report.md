@@ -591,33 +591,32 @@ json_data["records"].append(
 
 ### 2.3.5 Retrieve records
 
-To simulate data being read across the multiple clinic's services, the counterpart function of `record_store` is implemented. Again, like with `record_store`, this function is annotated with the wrapper `role_check_decorator()` since the RBAC has to be called to check user permissions if this operation is attempted. A record is retrieved based on the `owner_id`, the `patient_id` present within the `metadata` field of the record's JSON object, as well as the user's permission that the `role_check_decorator` uses.
+The stored records also need to be read across the multiple clinic's systems, so this function accounts for this.
+
+- **`@role_check_decorator`**: calling the role check logic.
+- **`owner_id`**: ID of the record's owner.
+- **`patient_id`**: ID patient referenced in the record.
+- **`permission`**: permission of the user attempting to perform this operation.
 
 ```python
 @role_check_decorator
 def record_retrieve(owner_id, patient_id, permission)
 ```
 
-An empty list is initialised at the start of the function, which will be an array of all the found records. At the end of the function, this will be returned to the user.
-
-```python
-records_list = []
-```
-
-The correct `aes_key` of the user (or record owner) is required for decryption purposes, using `retrieve_key()`.
+The AES key for the user is retrieved.
 
 ```python
 aes_key = retrieve_key(owner_id)
 ```
 
-Iterating through the records database, the corresponding record needs to be found, based on the `owner_id` and `patient_id` fields of the record JSON object – if they match with the values of the given arguments.
+From the the records database, the record that matches the given search parameters is returned.
 
 ```python
 for record in records_data["records"]:
     if record["owner_id"] == owner_id and record["meta_data"]["patient_id"] == patient_id:
 ```
 
-Using the `data` field of the record JSON object, the decryption process is performed using `aes_decrypt`, with the user's AES key and the encrypted cipher text. This is then appended to the `records_list` mentioned earlier in this section and returned to the user.
+The data from that record is decrypted and added to a list. This is then present to the user in a visual format.
 
 ```python
 # ...previous code
@@ -626,8 +625,6 @@ Using the `data` field of the record JSON object, the decryption process is perf
 
 return records_list
 ```
-
-**NOTE**: for more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
 
 #### 2.3.5.1 Individual access record retrieval
 
