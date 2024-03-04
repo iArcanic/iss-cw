@@ -5,6 +5,7 @@ bibliography: docs/report/references.bib
 toc: true
 toc-title: Table of Contents
 toc-depth: 5
+geometry: "left=1.25cm, right=1.25cm, top=1.25cm, bottom=1.25cm, landscape"
 csl: docs/report/harvard-imperial-college-london.csl
 ---
 
@@ -63,9 +64,7 @@ The user, with their newly created account, can now login into the system and ac
 - **`username`**: chosen user's username provided during registration.
 - **`password`**: user's custom password provided during registration.
 
-```python
-def login_user(username, password)
-```
+![](images/code-snippets/user-login-1.png)
 
 Appropriate validation checks are performed, and error messages are returned if necessary.
 
