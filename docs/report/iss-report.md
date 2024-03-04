@@ -497,7 +497,7 @@ The RBAC logic for this simulation is implemented as a Python wrapper. This mean
 - **`func`**: takes a whole function that the wrapper modifies.
 - **`wrapper(...)`**: function that modifies or extends another function.
 - **`owner_id`**: the ID of the owner of the record.
-- **`args, kwargs`**: to accept any number of extra parameters.
+- **`args, kwargs`**: to accept any number of extra parameters from the wrapped function.
 
 ```python
 def role_check_decorator(func):
@@ -667,30 +667,37 @@ return record
 
 ## 2.4 Data transmission
 
-Data needs to be stored and read across the various systems in the clinic. During the transmission, this data needs to remain secure and unreadable, so even if an unauthorised third party has access to the data, it is presented to them in an unreadable format. The algorithm of choice for this is RSA asymmetric key encryption.
+Data needs to be stored and read across the various systems in the clinic. During the transmission, this data needs to remain secure and unreadable. The algorithm of choice for this is RSA asymmetric key encryption.
 
 ### 2.4.1 Encryption
 
-The function below implements RSA encryption, using Python's RSA cryptographic library. It takes in the `data` to take to output as cipher text and the PEM string of the user's RSA public key that they have been assigned with.
+The function below implements RSA encryption, using Python's RSA cryptographic library.
+
+- **`data`**: the data in transit to be encrypted.
+- **`public_key_pem`**: the PEM string of the user's RSA public key.
 
 ```python
 def rsa_encrypt(data, public_key_pem)
 ```
 
-Since the public key is passed in as a PEM format, the previous `load_public_key_from_pem_string()` function (see [2.2.3.2](#2232-rsa)) takes the PEM string and converts into a usable RSA public key object.
+THe public key PEM string needs to be converted into a usable key object.
 
 ```python
 public_key = load_public_key_from_pem_string(public_key_pem)
 ```
 
-By using the `.encrypt()` method of the `public_key` object, the `data` can be RSA encrypted. First, the plaintext data is converted into bytes via `.encode()`, since this is the format the function accepts. With `padding.OAEP`, a padding scheme needs to be specified, where `mgf=padding.MGF1(algorithm=hashes.SHA256())` is the Mask Generation Function used, in this case with the SHA256 algorithm. The `label` parameter can be used for any additional labels to be included within the padding, but this is not required here, so it has been set to `None` (or `null`).
+The variable below uses the library's `.encrypt()` function to encrypt the data.
+
+- **`data.encode()`**: convert the plaintext data into bytes.
+- **`padding.OAEP`**: specifies the padding scheme to be used.
+- **`mgf`**:: specify the Mask Generation Function used, in this case, the SHA256 algorithm.
+- **`label`**: any additional labels to be included within the padding, but is not required here.
 
 ```python
 ciphertext = public_key.encrypt(
         data.encode(),
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
             label=None
         )
     )
@@ -698,20 +705,24 @@ ciphertext = public_key.encrypt(
 return ciphertext
 ```
 
-**NOTE**: for more detail on the full code implementation, see [4.3.2.2](#4322-rsa_key_managerpy).
-
 ### 2.4.2 Decryption
 
-The RSA decryption process has also been implemented as a wrapper.
+The encrypted data in transit needs to be appropriately decrypted when it has reached its destination. The following functions meet this criteria.
 
-Firstly, starting with the `rsa_decrypt()` function, it uses the user's private key and the `.decrypt()` method of the `private_key`. At the end, the `plaintext` is decoded back to a string to be readable.
+- **`ciphertext`**: the data in transit to be decrypted.
+- **`private_key_pem`**: the PEM string of the user's RSA private key.
+- **`private_key`**: user's RSA private key as usable key object.
+- **`padding.OAEP(...)`**: padding scheme with the parameters set for SHA-256 decryption (see [2.4.1](#241-encryption)).
+- **`plaintext.decode("utf-8")`**: convert the resulting plaintext back into a string.
 
 ```python
 def rsa_decrypt(ciphertext, private_key_pem):
     private_key = load_private_key_from_pem_string(private_key_pem)
-    plaintext = private_key.decrypt(
+    plaintext = private_key.decrypt
+    (
         ciphertext,
-        padding.OAEP(
+        padding.OAEP
+        (
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
             label=None
@@ -720,14 +731,18 @@ def rsa_decrypt(ciphertext, private_key_pem):
     return plaintext.decode("utf-8")
 ```
 
-This wrapper function takes in a function as a parameter. The inner function additionally accepts the record owner's ID as well as the `data`, which is the cipher text in this case.
+The RSA data decryption process needs to be called every time a record store or access request is sent to the backend. Implementing this as a Python wrapper function (similar to `role_check_decorator` in [2.3.3](#233-role-based-access-control-rbac)) allows this logic to be appended to any record operation.
+
+- **`func`**: the function the decorator is wrapper around.
+- **`owner_id`**: ID of the record's owner.
+- **`args, kwargs`**: accept any number of additional parameters from the wrapped function.
 
 ```python
 def rsa_decrypt_data_decorator(func):
     def wrapper(owner_id, data, *args, **kwargs):
 ```
 
-All the data from the RSA HSM is looped through to find the correct record based on the `user_id`. From this record, the PEM format of the RSA private key is obtained.
+The RSA HSM is searched to find the relevant RSA private key PEM string associated with the record owner.
 
 ```python
 rsa_hsm_data = data_read("data/rsa_hsm.json")
@@ -736,13 +751,13 @@ rsa_hsm_data = data_read("data/rsa_hsm.json")
             private_key_pem = key_info["key"]
 ```
 
-It then decrypts the transmission data via `rsa_decrypt()` by passing in the cipher text (through `data`) and the PEM of the RSA private key (that is converted into a usable key format).
+The transmission data is then decrypted using the previously mentioned `rsa_decrypt()` method.
 
 ```python
 decrypted_data = rsa_decrypt(data, private_key_pem)
 ```
 
-At the end, the original function's arguments are returned back, by passing the new values that the parameters take.
+At the end, the original function's arguments are returned back to it, passing any new values that the parameters take, where appropriate.
 
 ```python
 return func(
@@ -754,8 +769,6 @@ return func(
     individual_access=kwargs.get("individual_access")
 )
 ```
-
-**NOTE**: for more detail on the full code implementation, see [4.3.4.1](#4341-decrypt_datapy).
 
 # 3 Addressing requirements
 
