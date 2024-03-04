@@ -215,19 +215,20 @@ def generate_key_pair():
     return private_key, public_key
 ```
 
-**NOTE**: for more detail on the full code implementation see [4.3.2.2](#4322-rsa_key_managerpy).
-
 ### 2.2.2 Key storage
 
 #### 2.2.2.1 AES
 
-To store the AES symmetric key, it needs to be stored under the corresponding user. This ensures a unique key for each user and can be accessed system-wide by the multiple clinic services, so that it can be consistent.
+Each user will have a corresponding symmetric AES key for cryptographic operations. This needs to be access system wide across the multiple clinic services, ensuring that the key is consistent and not corrupted.
+
+- **`user_id`**: ID of the user to store the AES key under.
+- **`key`**: the actual AES key to be stored.
 
 ```python
 def store_aes_key(user_id, key)
 ```
 
-Using a simple `try` `catch` block, a file open operation is attempted in order to capture all the existing keys from the file. If not found, then it defaults the `json_data` variable to an empty JSON collection.
+The data from the AES HSM (Hardware Security Module) is first initially retrieved.
 
 ```python
 try:
@@ -237,7 +238,7 @@ except FileNotFoundError:
     json_data = {"aes_keys": []}
 ```
 
-By iterating through the `aes_keys` JSON collection, if the `user_id` passed in parameter matches the `for` loop's index, it makes an entry for the key, but as a hex object using `.hex()`. This is because the key is passed in as raw bytes, and cannot be stored in the JSON file unless serialised. It then stores this.
+By iterating through the `aes_keys` JSON collection, it attempts to first find if an entry for that user already exists. If not however, a new entry into the JSON collection is made, writing both the user's ID and their corresponding AES key. It then writes this to the AES HSM.
 
 ```python
 for entry in json_data["aes_keys"]:
@@ -250,8 +251,6 @@ for entry in json_data["aes_keys"]:
 with open(HSM_DB, 'w') as file:
     json.dump(json_data, file, indent=2)
 ```
-
-**NOTE**: for more detail on the full code implementation see [4.3.2.1.2](#43212-key_storepy).
 
 #### 2.2.2.2 RSA
 
