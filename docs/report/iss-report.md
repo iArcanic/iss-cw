@@ -492,16 +492,19 @@ return decrypted_data.decode()
 
 The Role Based Access Control (RBAC), is a method of access control where users are granted certain privileges or access to specific system properties based on the permissions they have. Access decisions are solely dependent on the user's permissions rather than the actual identity of the users themselves. This approach allows for easier access management since permissions can be quickly assigned or revoked by administrators.
 
-The RBAC for this simulation has been implemented as a Python wrapper function or decorator. This allows for additional functionality and flexibility. The decisioning for this implementation is that the RBAC needs to be called each time a user attempts to perform a record operation (see [2.3.4](#234-store-records) and [2.3.5](#235-retrieve-records)) – they are only able to do so if they have the necessary permissions.
+The RBAC logic for this simulation is implemented as a Python wrapper. This means that the role check logic can be executed for each record operation that the user attempts to access.
 
-A wrapper function is defined like so. The `role_check_decorator()` takes in a `func` parameter, meaning it takes in another whole function as a parameter. The inner `wrapper()` function either modifies or extends the behavior of the function is is called upon, taking in `owner_id` (owner of the record), `*args` and `**kwargs` to accept any number of extra positional arguments.
+- **`func`**: takes a whole function that the wrapper modifies.
+- **`wrapper(...)`**: function that modifies or extends another function.
+- **`owner_id`**: the ID of the owner of the record.
+- **`args, kwargs`**: to accept any number of extra parameters.
 
 ```python
 def role_check_decorator(func):
     def wrapper(owner_id, *args, **kwargs):
 ```
 
-To start the role access logic, first, the owner of the record or rather, whichever user is attempting to perform a record operation should be first checked to see if they exist and have roles allocated to them. If this is the case, then store all the available user roles into a variable.
+A validation check allows to verify whether the owner has any roles at all in the first place.
 
 ```python
 if owner_id in user_roles_data:
@@ -510,7 +513,7 @@ else:
     print(f"role_check.role_check_decorator -> User with ID {owner_id} not found in user roles data.")
 ```
 
-By looping through the user roles database, it first checks if the role actually exists. If so, then get the `permission` parameter with `kwargs.get()` from the wrapped function. As the permissions in the role permissions database are stored in capital letters, the `.upper()` ensures that it is in the same case regardless of the parameter value.
+Searching the role permissions database, it then checks whether the role actually exists in the first place, serving as another validation check.
 
 ```python
 if owner_id in user_roles_data:
@@ -523,7 +526,7 @@ if owner_id in user_roles_data:
             print(f"role_check.role_check_decorator -> Role {role} not found in role permissions data.")
 ```
 
-The function then checks whether the claimed permission passed to the original function is indeed within the permissions of that specific role. If so then control is passed back to the original function and the program flow resumes as normal – the user does have the necessary role. However, if this isn't the case, then a special `PermissionError` can be raised, terminating the execution – the user does not have the necessary roles.
+The function then compares whether the claimed permission is assigned to the user. If so, the function resumes execution and program flow resumes. However, an appropriate error is raised if this is not the case.
 
 ```python
 if role in role_permissions_data:
@@ -536,8 +539,6 @@ if role in role_permissions_data:
                             f"role_check.role_check_decorator -> User with ID {owner_id} "
                             f"does not have required permissions for this operation.")
 ```
-
-**NOTE**: for more detail on the full code implementation, see [4.3.3.3](#4333-role_checkpy).
 
 ### 2.3.4 Store records
 
