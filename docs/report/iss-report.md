@@ -39,23 +39,58 @@ New users must securely register with the system. The following function facilit
 - **`password`**: custom password provided by the user.
 - **`phone_number`**: placeholder registration data.
 
-![](images/code-snippets/user-registration-1.png)
+```python
+def register_user(username, password, phone_number)
+```
 
 User registration is initiated upon successful verification of provided details, with appropriate error messages returned in case of validation issues.
 
-![](images/code-snippets/user-registration-2.png)
+```python
+users_data = data_read_return_empty_if_not_found(USER_DB)
+
+if username in users_data:
+    print(f"register.register_user -> Username '{username}' already exists. "
+            f"Please choose a different username.")
+    return
+```
 
 Registration also performs two factor authentication, the below code generates a 2FA code, sends it to the provided phone number (simulated by displaying it on the console), prompts the user to enter the code, and verifies it against the generated code. This ensures an additional layer of security during user registration.
 
-![](images/code-snippets/user-registration-3.png)
+```python
+two_factor_code = generate_2fa_code()
+send_2fa_code(phone_number, two_factor_code)
+
+entered_code = input("Enter the 2FA code: ")
+
+if entered_code == two_factor_code:
+    print("register.register_user -> 2FA verification successful.")
+else:
+    print("register.register_user -> 2FA verification failed. Registration aborted.")
+    return
+```
 
 Upon successful registration, the user's details, including a cryptographic salt, a unique user ID and a securely hashed password using the Python `bcrypt` library, are stored in the database for increased security.
 
-![](images/code-snippets/user-registration-4.png)
+```python
+user_id = str(uuid.uuid4())
+salt = bcrypt.gensalt()
+hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+```
 
 User details are stored in the database as a JSON document.
 
-![](images/code-snippets/user-registration-5.png)
+```python
+new_user = {
+    'user_id': user_id,
+    'username': username,
+    'hashed_password': hashed_password.decode('utf-8'),
+    'salt': salt.decode('utf-8'),
+    'phone_number': phone_number
+}
+
+users_data[username] = new_user
+data_store(USER_DB, users_data)
+```
 
 ### 2.1.2 User login
 
@@ -64,7 +99,9 @@ The user, with their newly created account, can now login into the system and ac
 - **`username`**: chosen user's username provided during registration.
 - **`password`**: user's custom password provided during registration.
 
-![](images/code-snippets/user-login-1.png)
+```python
+def login_user(username, password)
+```
 
 Appropriate validation checks are performed, and error messages are returned if necessary.
 
