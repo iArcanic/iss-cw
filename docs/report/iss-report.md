@@ -196,7 +196,13 @@ def generate_aes_key():
 
 #### 2.2.1.2 RSA
 
-Using the `rsa.generate_private_key()` method, a new RSA private key is generated with the parameters enclosed within the brackets. `public_exponent` has the value of `65537`, which is the default for most RSA keys. `key_size` is the size of the key in bits, so a value of `2048` is a standard size providing a reasonable balance between both security and performance. Finally the `backend` parameter is set to `default_backend()`, which is the backend provided by the library. A `public_key` can also be derived from the generated private key.
+The function below generates a key pair consisting of an RSA public and private key, used for data transmission purposes (see [2.4](#24-data-transmission)).
+
+- **`public_exponent`**: A component for generating keys, with `65537` is the default for most RSA keys.
+- **`key_size`**: The size of the key in bits, with `2048` being a standard size prioritising security and usability.
+- **`backend`**: The backend processes, with `default_backend()` being the backend provided by the library itself.
+
+An RSA `public_key` can also be derived from the generated RSA private key.
 
 ```python
 def generate_key_pair():
