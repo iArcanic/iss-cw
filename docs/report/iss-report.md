@@ -630,19 +630,20 @@ return records_list
 
 Another additional requirement, especially for third party data being stored in the company, is the ability for owners to delegate access to specific users of the clinic, since it is their intellectual property after all.
 
-An additional function was required, so therefore, the `record_retrieve_by_id()` function allows the user to read a record based on its ID, and the `user_id` being the ID of the user trying to access this record. Note that the `role_check_decorator()` has not be wrapped around this function since the logic here is different the regular role check.
+- **`record_id`**: ID of the record being retrieved.
+- **`user_id`**: ID of the user attempting to retrieve the record.
 
 ```python
 def record_retrieve_by_id(record_id, user_id)
 ```
 
-To get all matching records, this line filters a list of records based on the condition that the `lambda` enforced, where `x` takes each element of the list and checks to see whether the `"record_id"` attribute of the JSON object matches the parameter `record_id`. The `[0]` is to access the first element in the `"records"` JSON collection.
+To get all the matching records, this line filters a list of records from the database based on the record's ID.
 
 ```python
 record = list(filter(lambda x: x["record_id"] == record_id, records_data["records"]))[0]
 ```
 
-The `if` statement here checks to see whether the ID of the user is in the `"individual_access"` collection of the matching record JSON object, i.e. if the user calling this function has been given access for that record. If not, then a `PermissionError` is raised.
+The function then checks whether the user has individual access to this specific record. If this isn't the case, then return an appropriate error message.
 
 ```python
 if user_id in record["individual_access"]:
@@ -654,7 +655,7 @@ else:
     )
 ```
 
-Within the `if` statement block, the same logic (see [2.3.5](#235-retrieve-records)) to decrypt the stored cipher text in the JSON object is implemented. The decrypted record is returned to the user at the end.
+The owner of the record has their corresponding AES key retrieved and the record's cipher text is decrypted.
 
 ```python
 # ...previous code
@@ -663,8 +664,6 @@ aes_key = retrieve_key(record["owner_id"])
 record["data"] = aes_data_decrypt(aes_key, record["data"])
 return record
 ```
-
-**NOTE**: for more detail on the full code implementation, see [4.3.3.5](#4335-record_retrievepy).
 
 ## 2.4 Data transmission
 
