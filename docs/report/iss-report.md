@@ -54,7 +54,7 @@ if username in users_data:
     return
 ```
 
-Registration also performs two factor authentication, the below code generates a 2FA code, sends it to the provided phone number (simulated by displaying it on the console), prompts the user to enter the code, and verifies it against the generated code. This ensures an additional later of security during user registration.
+Registration also performs two factor authentication, the below code generates a 2FA code, sends it to the provided phone number (simulated by displaying it on the console), prompts the user to enter the code, and verifies it against the generated code. This ensures an additional layer of security during user registration.
 
 ```python
 two_factor_code = generate_2fa_code()
@@ -94,13 +94,16 @@ data_store(USER_DB, users_data)
 
 ### 2.1.2 User login
 
-The user, with their newly created account via the `register()` function, can now use that to login into the system and access the relevant data. The only credentials that they require for this is their `username` and `password` as such. These are passed as parameters to the function.
+The user, with their newly created account, can now login into the system and access the relevant data. The following function takes that into consideration.
+
+- **`username`**: chosen user's username provided during registration.
+- **`password`**: user's custom password provided during registration.
 
 ```python
 def login_user(username, password)
 ```
 
-Based on the given parameters to the function, `login()` then checks if the username exists, and if not, appropriately terminates the program flow.
+Appropriate validation checks are performed, and error messages are returned if necessary.
 
 ```python
 if username not in users_data:
@@ -108,7 +111,7 @@ if username not in users_data:
     return
 ```
 
-Using the username and the JSON document, it attempts to get all of the user's data. This data is then used for further processing.
+All the data relating to the user from the database by getting the correct JSON document is captured.
 
 ```python
 user_data = users_data[username]
@@ -117,13 +120,15 @@ salt = user_data['salt']
 phone_number = user_data.get('phone_number', None)
 ```
 
-Since the function is hashed, the `bcrypt` library `.checkpw` function compares the bytes of the entered user's password against the stored hash in the database. If the hashes match, the function resumes execution.
+Using the Python `bcrypt` library, the entered password's is first hashed. This is compared against the stored hash in the database to confirm that the passwords indeed match.
 
 ```python
-if bcrypt.checkpw(entered_password.encode('utf-8'), stored_password_hash.encode('utf-8'))
+if bcrypt.checkpw(
+    entered_password.encode('utf-8'),
+    stored_password_hash.encode('utf-8'))
 ```
 
-Again, the two factor authentication functions are called, and if successful, a RSA key under the user's ID is generated and stored (see [2.2.1](#221-key-generation) and [2.2.2](#222-key-storage)) in the simulated (see [4.1.4](#414-external-dependencies)) RSA HSM (Hardware Security Module). The `user_id` and `public_key` key object is returned from the function for post login actions.
+Two factor authentication is called again to provide an additional layer of security for the login process as well. If the generated code matches the user's inputted code, then an RSA public key is generated for data transmission purposes later on (see [2.4](#24-data-transmission)).
 
 ```python
 two_factor_code = generate_2fa_code()
@@ -136,8 +141,6 @@ if entered_code == two_factor_code:
     public_key = refresh_rsa_key(user_data["user_id"])
     return user_data['user_id'], public_key
 ```
-
-**NOTE**: for more detail on the full code implementation, see [Appendix 4.3.1.2](#4312-loginpy).
 
 ### 2.1.3 Single Sign-on (SSO)
 
