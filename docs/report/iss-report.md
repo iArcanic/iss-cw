@@ -542,14 +542,30 @@ if role in role_permissions_data:
 
 ### 2.3.4 Store records
 
-To simulate users being able to interact with the various clinic's services and systems, being able to write and/or edit data is an important operation to implement. The function below is annotated with the `role_check_decorator` (see [2.3.3](#233-role-based-access-control-rbac)), so the user's role is checked each time they attempt to execute this function. `owner_id` is the ID of the user writing the record (the record owner), `data` being the actual data to be stored, `metadata` is any additional data passed in as a dictionary, `permission` which is the user's permission, `decrypted_data` for the data received from the RSA data transmission (see [2.4](#24-data-transmission)), and finally `individual_access` if the user wants the record to be retrieved by specific users only (see [2.5.1](#2351-individual-access-record-retrieval)) – defaulted to `None` initially.
+When users interact with the various clinic's systems, data may be stored in the form of records when certain operations are performed.
+
+- **`@role_check_decorator`**: calling the role check logic.
+- **`owner_id`**: ID of the record's owner.
+- **`data`**: the data (in plaintext) to be stored.
+- **`metadata`**: any additional data to be also stored.
+- **`permission`**: the permission of the user performing the operation.
+- **`decrypted_data`**: the decrypted transit data from the RSA data transmission.
+- **`individual_access`**: if specific users are allocated record access (see [2.5.1](#2351-individual-access-record-retrieval)).
 
 ```python
 @role_check_decorator
-def record_store(owner_id, data, meta_data, permission, decrypted_data, individual_access=None):
+def record_store
+(
+    owner_id,
+    data,
+    meta_data,
+    permission,
+    decrypted_data,
+    individual_access=None
+):
 ```
 
-First, the AES key assigned to the user is retrieved, by passing in the `owner_id` as the parameter for the `aes_encrypt()` method. `json_data` is the JSON file dump of the decrypted data from the RSA data transmission (see [2.4](#24-data-transmission)). `ciphertext` being the encrypted form of the plaintext, which needs to be serialised to be suitable for JSON storage.
+First, the user's AES key is retrieved. Using that key, the decrypted data from the RSA data transmission output (see [2.4](#24-data-transmission)) is re-encrypted again using AES, since the data is now at rest.
 
 ```python
 key = retrieve_key(owner_id)
@@ -558,7 +574,7 @@ ciphertext = aes_encrypt(key, json_data.encode())
 serialized_ciphertext = base64.b64encode(ciphertext).decode()
 ```
 
-All the components of the JSON object are brought together via a dictionary mapping. Using the `uuid` Python library a random unique identifier is generated. This JSON object will be stored in the `"records"` JSON collection.
+A new JSON document is made with the relevant data and is then stored within the records database.
 
 ```python
 record_id = str(uuid.uuid4())
@@ -572,8 +588,6 @@ json_data["records"].append(
         "individual_access": individual_access
     })
 ```
-
-**NOTE**: for more detail on the full code implementation, see [4.3.3.4](#4334-record_storepy).
 
 ### 2.3.5 Retrieve records
 
