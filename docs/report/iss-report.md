@@ -318,11 +318,13 @@ for entry in key_entries["aes_keys"]:
 
 #### 2.2.3.2 RSA
 
-Although there is no explicit function in the `rsa_manager.py` file for key retrieval, wherever required, a simple JSON file read was sufficient enough to obtain the key, and the logic is exactly the same as in [2.2.3.1](#2231-aes).
+The logic for RSA key retrieval is exactly the same as AES key retrieval.
 
-The main issue is the conversion between the PEM string into a usable RSA key format from the JSON serialisation. The following two function address this.
+Since the RSA private key was stored as a PEM string (see [2.2.2.2](#2222-rsa)), it needs to be converted back into a usable key format. The following two functions are implemented to perform this operation, one for the private key and the other for the public key.
 
-Below, this function takes in the RSA private key's `pem_string` as a parameter and utilises the cryptographic library's `.load_pem_private_key()` method to load the private key object. The `pem_string` is converted into bytes via `.encode()` since the function expects data in binary form, allowing any non-textual characters or special formatting within the PEM data to be preserved accurately. `password` being set to `None` means that there is no password protection applied, which is consistent with the fact that no encryption algorithm was applied in the initial PEM conversion.
+- **`pem_string.encode()`**: the PEM string converted into bytes
+- **`password`** if any password protection was applied to the PEM string, in this case it is set to `None` since the HSM takes care of this
+- **`backend`**: The backend processes, with `default_backend()` being the backend provided by the library itself.
 
 ```python
 def load_private_key_from_pem_string(pem_string):
@@ -332,11 +334,7 @@ def load_private_key_from_pem_string(pem_string):
         backend=default_backend()
     )
     return private_key
-```
 
-The counterpart function, for the RSA public key, is more or less the same, except the method being used is `.load_pem_public_key()`.
-
-```python
 def load_public_key_from_pem_string(pem_string):
     public_key = serialization.load_pem_public_key(
         pem_string.encode(),
